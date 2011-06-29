@@ -1,0 +1,11 @@
+Package: power
+Type: Package
+Title: Sample size estimation
+Version: 0.3-1
+Date: 2011-06-29
+Author: Thomas Fabbro
+Maintainer: Thomas Fabbro <fabbrot@uhbs.ch>
+Description: The power package takes user-defined power functions, evaluates them for a parameter range, and draws a sensitivity plot. It also provides a simulation procedure for sample size estimation and methods for adding informations to a Sweave report.
+License: GPL-3
+LazyLoad: yes
+Depends: R (>= 2.5.0), methods, grid, lattice, graphics, base, stats

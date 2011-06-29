@@ -1,0 +1,14 @@
+importFrom(graphics, plot)
+export("powPar",
+       "powEx"
+       )
+exportClasses("powPar", "powEx", "power")
+exportMethods("powCalc",
+              "pp",
+              "n",
+              "theta",
+              "xi",
+              "tex",
+              ## not generic
+              "merge",
+              "plot")
