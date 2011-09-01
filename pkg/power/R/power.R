@@ -83,6 +83,8 @@ setMethod("sampleSize",
             theta.example <- x@theta.example
             dat <- exDat(x)
             dat.example <- dat[dat$theta == theta.example & dat$power > 0& dat$power < 1, ]
+            ## it is a problem if all data available is used for calculating the sample size (trade-off, taking only neighbours or taking all...)
+            dat.example <- dat.example[dat.example$power > 0.8 * power.example& dat.example$power < 1.2 * power.example,]
             ##
             if (max(dat$power, na.rm=TRUE) < min(power.example, na.rm=TRUE) | min(dat$power, na.rm=TRUE)>max(power.example, na.rm=TRUE)) {
               stop(paste("The power of the example is outside of the power range observed. The range is: ", round(min(dat$power, na.rm=TRUE), 2), "to" , round(max(dat$power, na.rm=TRUE),2), ". There will be no example." , sep = ""))
@@ -135,6 +137,9 @@ setMethod("inspect",
             theta.example <- object@theta.example
             dat <- exDat(object)
             dat.example <- dat[dat$theta == theta.example & dat$power > 0& dat$power < 1, ]
+            ## it is a problem if all data available is used for calculating the sample size (trade-off, taking only neighbours or taking all...)
+            dat.example <- dat.example[dat.example$power > 0.8 * power.example& dat.example$power < 1.2 * power.example,]
+            ##
             ##
             if (max(dat$power, na.rm=TRUE) < min(power.example, na.rm=TRUE) | min(dat$power, na.rm=TRUE)>max(power.example, na.rm=TRUE)) {
               stop(paste("The power of the example is outside of the power range observed. The range is: ", round(min(dat$power, na.rm=TRUE), 2), "to" , round(max(dat$power, na.rm=TRUE),2), ". There will be no example." , sep = ""))
