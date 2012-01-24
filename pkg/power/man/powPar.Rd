@@ -1,7 +1,7 @@
 \name{powPar}
 \alias{powPar}
 \title{
-  Constructing a \code{powPar}-object
+  Constructing an object of class powPar.
 }
 \description{
 A function for constructing an object of class \code{powPar}. Such an
@@ -10,16 +10,19 @@ evaluating the power for a parameter range.
 All information that is needed for calculating the power should be
 provided to this function by making use of the \code{...} argument.
 }
-\usage{powPar(n, theta.name, xi.name, ...)}
+\usage{powPar(n, theta = NA, xi = NA, ...)}
 \arguments{
   \item{n}{A numeric vector, indicating for which range of sample sizes
     to evaluate the power.}
-  \item{theta.name}{A character that indicates the name of a numeric
-    vector that was passed to the function (\code{...}). This vector
+  \item{theta}{A numeric
+    vector that will be used for evaluating the power. If \code{theta}
+    is \code{NA} using the argument \code{theta.name}, a character indicates the name of a numeric
+    vector that was passed to the function (\code{...}) can be specified. This vector
     will later be used for evaluating the power. It will be referred to
     as the parameter called \code{theta}.}
-    \item{xi.name}{A character that indicates the name of an optional numeric
-    vector that was passed to the function (\code{...}). This vector
+  \item{xi}{A numeric vector that will be used for evaluating the power.
+    If \code{xi} is \code{NA} using the argument \code{xi.name}, a character that indicates the name of an optional numeric
+    vector that was passed to the function (\code{...}) can be specified. This vector
     will later be used for evaluating the power. It will be referred to
     as the parameter called \code{xi}. Since for every element of
     \code{xi} an individuall sensitivity plot will be constructed, the

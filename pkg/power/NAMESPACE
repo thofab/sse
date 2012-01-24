@@ -3,7 +3,8 @@ export("powPar",
        "powEx"
        )
 exportClasses("powPar", "powEx", "power")
-exportMethods("powCalc",
+exportMethods("inspect",
+              "powCalc",
               "pp",
               "n",
               "theta",
