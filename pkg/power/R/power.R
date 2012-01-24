@@ -14,7 +14,11 @@ setClass("powEx",
                         xi.example = "numeric",
                         endpoint.example = "character",
                         power.example = "numeric",
-                        drop = "numeric"))
+                        method = "character",
+                        lm.range = "numeric",
+                        drop = "numeric",
+                        forceDivisor = "logical",
+                        divisor = "integer"))
 ##
 setClass("Resample",
          representation(n.iter = "integer"))
@@ -40,21 +44,55 @@ setClass("power",
 
 
 ## ------------------------------------------------------------------ CONSTRUCTORS
-powPar <- function(n, theta.name, xi.name = NA,  ...){
+powPar <- function(n, theta = NA, xi = NA, ...){
   dots <- as.list(substitute(list(...)))[-1]
   dots.eval <- sapply(dots, eval)
-  if(is.na(xi.name)){
-    xi <- as.numeric(NA)
+  dots.eval <- as.list(dots.eval)
+  ## handling of theta
+  if( all(is.na(theta)) ){
+    if( any(names(dots.eval) == "theta.name") ){
+      theta.name <- dots.eval[["theta.name"]]
+      if( any(names(dots.eval) == theta.name) ){
+        theta <- dots.eval[[theta.name]]
+      }else{
+        stop(paste("You said that the theta.name is \"", theta.name, "\" but there is no argument called", theta.name, sep = ""))
+      }
+      dots.eval[["theta.name"]] <- NULL
+    }else{
+      stop("If the argument theta is NA, you should provide the argument theta.name with the name of the argument that provides the vector of values to evaluate.")
+    }
   }else{
-    xi <- eval(dots[[xi.name]])
+    if( any(names(dots.eval) == "theta.name") ){
+      theta.name <- dots.eval[["theta.name"]]
+      dots.eval[["theta.name"]] <- NULL
+    }else{
+      theta.name <- as.character(NA)
+    }
+  }
+  ## handling of xi 
+  if( all(is.na(xi)) ){
+    if( any(names(dots.eval) == "xi.name") ){
+      xi <- dots.eval[[xi.name]]
+      dots.eval[["xi.name"]] <- NULL
+    }else{
+      xi.name <- as.character(NA)
+      xi <- NA
+    }
+  }else{
+    if( any(names(dots.eval) == "xi.name") ){
+      xi.name <- dots.eval[["xi.name"]]
+      dots.eval[["xi.name"]] <- NULL
+    }else{
+      xi.name <- as.character(NA)
+    }
   }
   ##
   powPar <- new("powPar",
                 list = dots.eval,
-                theta = round(dots.eval[[theta.name]], 20), # there is for sure a nicer solution than rounding here ... the same is true for xi
+                theta = round(theta, 20), # there is for sure a nicer solution than rounding here ... the same is true for xi
                 theta.name = theta.name,
                 xi = round(xi, 20),
-                xi.name = as.character(xi.name),
+                xi.name = xi.name,
                 n = as.integer(n),
                 n.act = as.integer(NA),
                 theta.act = as.numeric(NA),
@@ -65,122 +103,150 @@ powPar <- function(n, theta.name, xi.name = NA,  ...){
   return(powPar)
 }
 
-powEx <- function (theta, xi = NA, endpoint = NA, power = 0.9, drop = 0) {
+powEx <- function (theta, xi = NA, endpoint = NA, power = 0.9, drop = 0, method = c("default", "lm", "step"), lm.range = 0.2, forceDivisor = FALSE) {
+  method <- match.arg(method)
+  ## handle the divisor
+  divisor <- as.integer(NA)
+  if ( is.numeric(forceDivisor) ){
+    if ( forceDivisor <= 0 ) warning("If a divisor should be used the argument forceDivisor should get a positive number")
+    divisor <- as.integer(forceDivisor)
+    forceDivisor <- TRUE
+  }
   new("powEx",
       theta.example = theta,
       xi.example = as.numeric(xi),
       endpoint.example = as.character(endpoint),
       power.example = power,
-      drop = drop)
+      drop = drop,
+      method = method,
+      lm.range = lm.range,
+      forceDivisor = forceDivisor,
+      divisor = divisor)
 }
 
 ### ---------------------------------
 
 setMethod("sampleSize",
           signature = c(x = "power"),
-          definition = function(x, y, ...){
+          definition = function(x, inspect = FALSE, ...){
+            ##
             power.example <- x@power.example
             theta.example <- x@theta.example
+            method <- x@method
+            lm.range <- x@lm.range
+            n.vec <- x@n
+            n.iter <- x@n.iter
+            forceDivisor <- x@forceDivisor
+            divisor <- x@divisor
+            ##
+            ## handling the default method
+            if ( method == "default" ){
+              if ( is.na(n.iter) ){method <- "step"}else{method <- "lm"}
+            }
+            ##
             dat <- exDat(x)
             dat.example <- dat[dat$theta == theta.example & dat$power > 0& dat$power < 1, ]
-            ## it is a problem if all data available is used for calculating the sample size (trade-off, taking only neighbours or taking all...)
-            dat.example <- dat.example[dat.example$power > 0.8 * power.example& dat.example$power < 1.2 * power.example,]
             ##
             if (max(dat$power, na.rm=TRUE) < min(power.example, na.rm=TRUE) | min(dat$power, na.rm=TRUE)>max(power.example, na.rm=TRUE)) {
               stop(paste("The power of the example is outside of the power range observed. The range is: ", round(min(dat$power, na.rm=TRUE), 2), "to" , round(max(dat$power, na.rm=TRUE),2), ". There will be no example." , sep = ""))
-      example <- FALSE
+              example <- FALSE
             }
             ##
             fisher <- function(x) 0.5 * log((1 + x) / (1 - x))
             unfisher <- function(y) (exp(2 * y) -1)/(1 + exp(2 * y))
-            type = "lm"
-            inspect <- FALSE
+            ##
+            m.lm <- lm(sample.size ~ fisher(power), data = dat.example)
+            ##
+### it is a problem if all data available is used for calculating the sample size (trade-off, taking only neighbours or taking all...)
+            switch(method,
+                   ## linear model
+                   "lm" = {
+                     power.borders <- (1 + c(-1, 1) * lm.range) * power.example
+                     ## to allow fisher transformation on power.borders:
+                     power.borders[power.borders > 1] <- 0.99
+                     power.borders[power.borders < 0] <- 0
+                                        # a vector of length to indicating the border for the power range used for fitting a linear model and estimating the sample size
+                     dat.example.range <- dat.example[dat.example$power > power.borders[1] & dat.example$power < power.borders[2], ]
+                     ##
+                     m.lm.range <- lm(sample.size ~ fisher(power), data = dat.example.range)
+                     p.lm <- predict(m.lm.range, interval = "confidence", newdata = data.frame(power = c(power.example, power.borders)))
+                     sample.size <- ceiling(p.lm[1, 1])
+                     cat(paste("estimator: ", sample.size,
+                               "\n95%CI: [", paste(round(p.lm[1, c("lwr", "upr")]), collapse = "; " ), "]\n"))
+                     ## forceDivisor handling
+                     if ( forceDivisor ){
+                       if ( is.na(divisor) ){
+                         ## find out the greatest common divisor
+                         divisor <- 1
+                         for ( i in 2:min(n.vec) ) {
+                           divisor <- ifelse(all(n.vec %% i == 0), i, divisor)
+                         }
+                       }
+                       if ( sample.size%%divisor ) {
+                         sample.size <- sample.size + (divisor - sample.size%%divisor)
+                         cat(paste("Returning ", sample.size, " instead of the estimator to achieve a divisibility with the divisor ", divisor,".", "\n", sep = ""))
+                       }
+                     }
+                     
+                     mypanel <- function(x, y, ...) {
+                       panel.xyplot(x, y, col = "blue", ...)
+                       panel.loess(x, y, span = 0.75, degree = 2, family = "gaussian", col = "blue", ...)
+                       ## panel.abline(m.lm.range$coef, col = "red")
+                       panel.lines(x = c(fisher(power.borders)), y = p.lm[2:3, 1], col = "red", lty = 1, lwd = 1.5)
+                       panel.abline(m.lm$coef, col = "blue", lty = 2)
+                       ## showing the chosen power
+                       panel.text(x = fisher(power.example), y = mean(dat.example$sample.size), labels = paste(" power = ", round(power.example, 2), sep = ""), adj = c(0.5, 0), srt = 90, col = "grey")
+                       panel.abline(v = fisher(power.example), col = "gray")
+                       ## showing the chosen sample size
+                       panel.abline(h = sample.size, col = "gray")
+                       panel.text(x = mean(fisher(dat.example$power)), y = sample.size, labels = paste(" sample size = ", sample.size, sep = ""), adj = c(0, -0.1), col = "grey")
+                     }
+                   },
+                   "step" = {
+                     element <- tail(which(dat.example$power < power.example), 1) + 1
+                     sample.size <- dat.example$sample.size[element]
+                     ## for the inspection plot we need a line (based on all data)
+                     m.lm <- lm(sample.size ~ fisher(power), data = dat.example)
+                     library(grid)
+                     mypanel <- function(x, y, ...) {
+                       panel.xyplot(x, y, col = "blue", ...)
+                       panel.loess(x, y, span = 0.75, degree = 2, family = "gaussian", col = "blue", ...)
+                       panel.abline(m.lm$coef, col = "blue", lty = 2)
+                       panel.abline(v = fisher(power.example), col = "gray")
+#                       grid.text(label = paste("power = ", round(power.example, 2), sep = ""), x = fisher(power.example), y = unit(0.15, "npc"), just = c(-0.01, 0.5))
+                       ## showing the chosen power
+                       panel.text(x = fisher(power.example), y = mean(dat.example$sample.size), labels = paste(" power: ", round(power.example, 2), sep = ""), adj = c(0.5, 0), srt = 90, col = "grey")
+                       panel.points(x = fisher(dat.example$power[element]), y = dat.example$sample.size[element], col = "red")
+                       ## showing the chosen sample size
+                       panel.abline(h = sample.size, col = "gray")
+                       panel.text(x = mean(fisher(dat.example$power)), y = sample.size, labels = paste(" sample size: ", sample.size, sep = ""), adj = c(0, -0.1), col = "grey")
+                     }
+                   })
 ### loess
 ###############
 ### this part is not used and only here fore historical reasons
-            if (type == "loess"){
-              span = 0.05
-              m.loess <- loess(sample.size ~ fisher(power), span = span,
-                               data = dat.example)
-              p.loess <- predict(m.loess, newdata = data.frame(power = power.example))
-              sample.size <- ceiling(p.loess)
-              cat(paste("estimator: ", sample.size,  "\n"))
+            ## if (type == "loess"){
+            ##   span = 0.05
+            ##   m.loess <- loess(sample.size ~ fisher(power), span = span,
+            ##                    data = dat.example)
+            ##   p.loess <- predict(m.loess, newdata = data.frame(power = power.example))
+            ##   sample.size <- ceiling(p.loess)
+            ##   cat(paste("estimator: ", sample.size,  "\n"))
+            ## }
+            if (inspect) {
+              print(xyplot(sample.size ~ fisher(power), data = dat.example,
+                           xlab = "power (transformed)",
+                           ylab = "sample size",
+                           panel = mypanel
+                           ))
             }
-### linear model
-###############
-            if (type == "lm"){
-              m.lm <- lm(sample.size ~ fisher(power), data = dat.example)
-              ##
-              if (inspect) {
-                mypanel <- function(x, y, ...) {
-                  panel.xyplot(x, y, ...)
-                  panel.loess(x, y, span = 0.75, degree = 2, family = "gaussian", ...)
-                  panel.abline(m.lm$coef, col = "red")
-                  panel.abline(v = fisher(0.9), col = "gray")
-                }
-                print(xyplot(sample.size ~ fisher(power), data = dat.example,
-                             panel = mypanel
-                             ))
-              }
-              p.lm <- predict(m.lm, interval = "confidence", newdata = data.frame(power = power.example))
-              sample.size <- ceiling(p.lm[,1])
-              cat(paste("estimator: ", sample.size,
-                        "\n95%CI: [", paste(round(p.lm[,c("lwr", "upr")]), collapse = "; " ), "]\n"))
-            }
-            new("SampleSize", estimate = as.integer(sample.size))
+            return(new("SampleSize", estimate = as.integer(sample.size)))
           })
 
 setMethod("inspect",
           signature = c(object = "power"),
           definition = function(object){
-            power.example <- object@power.example
-            theta.example <- object@theta.example
-            dat <- exDat(object)
-            dat.example <- dat[dat$theta == theta.example & dat$power > 0& dat$power < 1, ]
-            ## it is a problem if all data available is used for calculating the sample size (trade-off, taking only neighbours or taking all...)
-            dat.example <- dat.example[dat.example$power > 0.8 * power.example& dat.example$power < 1.2 * power.example,]
-            ##
-            ##
-            if (max(dat$power, na.rm=TRUE) < min(power.example, na.rm=TRUE) | min(dat$power, na.rm=TRUE)>max(power.example, na.rm=TRUE)) {
-              stop(paste("The power of the example is outside of the power range observed. The range is: ", round(min(dat$power, na.rm=TRUE), 2), "to" , round(max(dat$power, na.rm=TRUE),2), ". There will be no example." , sep = ""))
-      example <- FALSE
-            }
-            ##
-            fisher <- function(x) 0.5 * log((1 + x) / (1 - x))
-            unfisher <- function(y) (exp(2 * y) -1)/(1 + exp(2 * y))
-            type = "lm"
-            inspect <- TRUE
-            span = 0.15
-### loess
-###############
-            if (type == "loess"){
-              m.loess <- loess(sample.size ~ fisher(power), span = span,
-                               data = dat.example)
-              p.loess <- predict(m.loess, newdata = data.frame(power = power.example))
-              sample.size <- ceiling(p.loess)
-              cat(paste("estimator: ", sample.size,  "\n"))
-            }
-### linear model
-###############
-            if (type == "lm"){
-              m.lm <- lm(sample.size ~ fisher(power), data = dat.example)
-              ##
-              if (inspect) {
-                mypanel <- function(x, y, ...) {
-                  panel.xyplot(x, y, ...)
-                  panel.loess(x, y, span = 0.75, degree = 2, family = "gaussian", ...)
-                  panel.abline(m.lm$coef, col = "red")
-                  panel.abline(v = fisher(0.9), col = "gray")
-                }
-                print(xyplot(sample.size ~ fisher(power), data = dat.example,
-                             panel = mypanel
-                             ))
-              }
-              p.lm <- predict(m.lm, interval = "confidence", newdata = data.frame(power = power.example))
-              sample.size <- ceiling(p.lm[,1])
-              cat(paste("estimator: ", sample.size, "\n95%CI:   [", paste(round(p.lm[,c("lwr", "upr")]), collapse = "; " ), "]\n"))
-            }
-            ##
+            invisible(sampleSize(x = object, inspect = TRUE))
           })
 
 ###---------------------------------------------------------------------------------------------------PLOT
@@ -336,12 +402,12 @@ setMethod("plot",
 
 setMethod("powCalc",
           signature(object="powPar"),
-          definition = function(object, statistic, type = "power", n.iter = NA, cluster = NULL, ...){
+          definition = function(object, statistic, n.iter = NA, cluster = NULL, ...){
   # arg: n.iter
   n.iter <- as.integer(n.iter)
   ##
-  if (type == "resample") {
-    power.fun <- function(statistic, object, n.iter){
+  if ( !is.na(n.iter) ) {
+    power.fun <- function(statistic, object, ...){
       sig <- replicate(n.iter,
                        statistic(object)
                        )
@@ -352,7 +418,7 @@ setMethod("powCalc",
     }
     empirical.endpoints <- power.fun(statistic, object, n.iter = 1)
   }
-  if (type == "power") {
+  if ( is.na(n.iter) ) {
     power.fun <- function(statistic, object){
       return(statistic(object))
     }
@@ -368,7 +434,7 @@ setMethod("powCalc",
   power.array <- array(NA, dim=c(dim(object), n.endpoint))
 
   ## enable parallel computing (zumbrunnt)
-  if (is.null(cluster) | type != "resample") {
+  if (is.null(cluster) | is.na(n.iter) ) {
 
     ## original version (fabbrot)
     for (n.i in seq(along = object@n)){
@@ -377,10 +443,10 @@ setMethod("powCalc",
           object@n.act <- object@n[n.i]
           object@theta.act <- object@theta[theta.i]
           object@xi.act <- object@xi[xi.i]
-          if (type == "resample") {
+          if ( !is.na(n.iter) ) {
             power.array[n.i, theta.i, xi.i, ] <- power.fun(statistic, object, n.iter)
           }
-          if (type == "power") {
+          if ( is.na(n.iter) ) {
             power.array[n.i, theta.i, xi.i, ] <- power.fun(statistic, object)
           }
                                         #        cat(paste(object@n, object@theta, object@xi, "\n"))

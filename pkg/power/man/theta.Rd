@@ -1,7 +1,7 @@
 \name{theta}
 \alias{theta}
 \title{
-Extracting the actual \code{theta}
+Extracting the actual theta.
 }
 \description{
   Extracting the actual \code{theta} from a \code{powPar}-object.

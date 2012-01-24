@@ -1,9 +1,8 @@
 \name{pp}
 \alias{pp}
 \title{
-Extracting all elements of an object of class \code{powPar} by their
-names except
-\code{theta} and \code{n}.
+Extracting all elements of an object of class powPar by their names
+except theta and n.
 }
 \description{
   All information needed for the power-function should be provided by

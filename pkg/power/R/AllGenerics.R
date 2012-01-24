@@ -27,7 +27,7 @@ setGeneric(# for programming on powPar parameters
 
 setGeneric(# estimats n from objects of class "power"
            name = "sampleSize",
-           def = function(x, y, ...) {
+           def = function(x, ...) {
              standardGeneric("sampleSize")
            })
 

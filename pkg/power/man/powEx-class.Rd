@@ -17,7 +17,11 @@ Objects can be created by calls of the form \code{new("powEx", ...)}.
     \item{\code{endpoint.example}:}{Object of class \code{"character"},
       the endpoint to be used, only if several endpoints were evaluated.}
     \item{\code{power.example}:}{Object of class \code{"numeric"}}
+    \item{\code{method}:}{Object of class \code{"character"} ~~ }
+    \item{\code{lm.range}:}{Object of class \code{"numeric"} ~~ }
     \item{\code{drop}:}{Object of class \code{"numeric"} ~~ }
+    \item{\code{forceDivisor}:}{Object of class \code{"logical"} ~~ }
+    \item{\code{divisor}:}{Object of class \code{"logical"} ~~ }
   }
 }
 \section{Methods}{
