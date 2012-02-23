@@ -350,17 +350,18 @@ setMethod("merge",
           })
 
 setMethod("tex", signature(x="power", type = "character"),
-          function(x, type = c("drop", "nRec", "nEval", "sampling", "theta", "n.iter", "power", ...), ...){
+          function(x, type = c("drop", "nRec", "nEval", "sampling", "theta", "xi", "n.iter", "power"), ...){
+            type <- match.arg(type)
             switch(type,
-                   sampling = {paste("$n_{i=1,...,", length(x@n), "} = ",min(x@n), ", ..., ",max(x@n),"$", sep = "")
-                             },
+                   sampling = {paste("$n_{i=1,...,", length(x@n), "} = ",min(x@n), ", ..., ",max(x@n),"$", sep = "")},
                    theta = {x@theta.example},
+                   xi = {x@xi.example},
                    n.iter = {x@n.iter},
                    power = {x@power.example},
                    drop = {paste(round(100*x@drop), "~\\\\%", sep = "")},
                    nRec = {ceiling(sampleSize(x)@estimate/(1-x@drop))},
                    nEval = {ceiling(sampleSize(x)@estimate)},
-                   {"default"})
+                   {"undefinded sting provided for the argument type"}) # not used as long as match.arg is used because mach.arg returns with an error if it does not match!
           })
 
 
