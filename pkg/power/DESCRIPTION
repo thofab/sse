@@ -1,8 +1,8 @@
 Package: power
 Type: Package
 Title: Sample size estimation
-Version: 0.3-2
-Date: 2012-01-09
+Version: 0.3-3
+Date: 2012-02-23
 Author: Thomas Fabbro
 Maintainer: Thomas Fabbro <fabbrot@uhbs.ch>
 Description: The power package takes user-defined power functions, evaluates them for a parameter range, and draws a sensitivity plot. It also provides a simulation procedure for sample size estimation and methods for adding informations to a Sweave report.
