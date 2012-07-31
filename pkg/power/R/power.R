@@ -89,9 +89,9 @@ powPar <- function(n, theta = NA, xi = NA, ...){
   ##
   powPar <- new("powPar",
                 list = dots.eval,
-                theta = round(theta, 20), # there is for sure a nicer solution than rounding here ... the same is true for xi
+                theta = round(theta, 10), # there is for sure a nicer solution than rounding here ... the same is true for xi
                 theta.name = theta.name,
-                xi = round(xi, 20),
+                xi = round(xi, 10),
                 xi.name = xi.name,
                 n = as.integer(n),
                 n.act = as.integer(NA),
