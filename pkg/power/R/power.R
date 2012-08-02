@@ -124,6 +124,31 @@ powEx <- function (theta, xi = NA, endpoint = NA, power = 0.9, drop = 0, method 
       divisor = divisor)
 }
 
+
+
+## ------------------------------------------------------------------ METHODS
+### for internal usage only:
+
+setMethod("exDat",
+          signature = c(x = "power"),
+          definition = function(x, y, ...){
+            xi.example <- x@xi.example
+            if (is.na(xi.example)) {
+              xi.example.integer <- 1
+            } else {
+              xi.example.integer <- which(xi.example == x@xi)
+            }
+            endpoint.example <- x@endpoint.example
+            if (is.na(endpoint.example)) {
+              endpoint.example.integer <-  1
+            } else {
+              endpoint.example.integer <- which(endpoint.example == x@endpoint.name)
+            }
+            dat <- data.frame(sample.size = rep(pp(x, "n"), times = dim(x)[2]),
+                              theta = rep(pp(x, "theta"), each = dim(x)[1]),
+                              power = c(pp(x, "core")[,,xi.example.integer,endpoint.example.integer]))
+            return(dat)
+          })
 ### ---------------------------------
 
 setMethod("sampleSize",
@@ -139,17 +164,22 @@ setMethod("sampleSize",
             forceDivisor <- x@forceDivisor
             divisor <- x@divisor
             ##
-            ## handling the default method
+            ## set the default method depending on n.iter
             if ( method == "default" ){
               if ( is.na(n.iter) ){method <- "step"}else{method <- "lm"}
             }
             ##
             dat <- exDat(x)
-            dat.example <- dat[dat$theta == theta.example & dat$power > 0& dat$power < 1, ]
             ##
             if (max(dat$power, na.rm=TRUE) < min(power.example, na.rm=TRUE) | min(dat$power, na.rm=TRUE)>max(power.example, na.rm=TRUE)) {
-              stop(paste("The power of the example is outside of the power range observed. The range is: ", round(min(dat$power, na.rm=TRUE), 2), "to" , round(max(dat$power, na.rm=TRUE),2), ". There will be no example." , sep = ""))
-              example <- FALSE
+              stop(paste("The power of the example is outside of the observed range for the whole parameter space. The observed range is: ", round(min(dat$power, na.rm=TRUE), 2), "to" , round(max(dat$power, na.rm=TRUE),2), ". There will be no example." , sep = ""))
+            }
+            ##
+            dat.example <- dat[dat$theta == theta.example & dat$power > 0 & dat$power < 1, ]
+            ##
+            if (max(dat.example$power, na.rm=TRUE) < min(power.example, na.rm=TRUE) | min(dat.example$power, na.rm=TRUE)>max(power.example, na.rm=TRUE)) {
+              warning(paste("The power of the example is outside of the observed range. The observed range is: ", round(min(dat.example$power, na.rm=TRUE), 2), "to" , round(max(dat.example$power, na.rm=TRUE),2), ". There will be no example." , sep = ""))
+             method <- "na" # by setting the method to na sample size is not estimated but set to NA
             }
             ##
             fisher <- function(x) 0.5 * log((1 + x) / (1 - x))
@@ -187,7 +217,6 @@ setMethod("sampleSize",
                          cat(paste("Returning ", sample.size, " instead of the estimator to achieve a divisibility with the divisor ", divisor,".", "\n", sep = ""))
                        }
                      }
-                     
                      mypanel <- function(x, y, ...) {
                        panel.xyplot(x, y, col = "blue", ...)
                        panel.loess(x, y, span = 0.75, degree = 2, family = "gaussian", col = "blue", ...)
@@ -221,7 +250,14 @@ setMethod("sampleSize",
                        panel.abline(h = sample.size, col = "gray")
                        panel.text(x = mean(fisher(dat.example$power)), y = sample.size, labels = paste(" sample size: ", sample.size, sep = ""), adj = c(0, -0.1), col = "grey")
                      }
-                   })
+                   },
+                   "na" = {
+                     sample.size <- NA
+                      mypanel <- function(x, y, ...) {
+                       panel.xyplot(x, y, col = "blue", ...)
+                     }
+                   }
+                   )
 ### loess
 ###############
 ### this part is not used and only here fore historical reasons
@@ -242,14 +278,8 @@ setMethod("sampleSize",
             }
             return(new("SampleSize", estimate = as.integer(sample.size)))
           })
+### ---------------------------------
 
-setMethod("inspect",
-          signature = c(object = "power"),
-          definition = function(object){
-            invisible(sampleSize(x = object, inspect = TRUE))
-          })
-
-###---------------------------------------------------------------------------------------------------PLOT
 plot.power <- function(x, at = c(0.9, 0.8, 0.85, 0.95), smooth = FALSE, example = TRUE, ...){
   object <-  x
   dat <- exDat(object)
@@ -269,6 +299,10 @@ plot.power <- function(x, at = c(0.9, 0.8, 0.85, 0.95), smooth = FALSE, example 
   }
   if (example){
     sample.size <- sampleSize(object)@estimate
+    if (is.na(sample.size)) {
+      ## this is TRUE if the range of power for the theta.example does not include power.example
+      example <- FALSE
+    }
     power.example <- object@power.example
     theta.example <- object@theta.example
   }
@@ -304,38 +338,8 @@ plot.power <- function(x, at = c(0.9, 0.8, 0.85, 0.95), smooth = FALSE, example 
     print(cp)
 }
 
-
-
-
-
-## ------------------------------------------------------------------ METHODS
-### for internal usage only:
-
-
+### ------------------------------------------------------------------
 ### for users usage also:
-setMethod("exDat",
-          signature = c(x = "power"),
-          definition = function(x, y, ...){
-            xi.example <- x@xi.example
-            if (is.na(xi.example)) {
-              xi.example.integer <- 1
-            } else {
-              xi.example.integer <- which(xi.example == x@xi)
-            }
-            endpoint.example <- x@endpoint.example
-            if (is.na(endpoint.example)) {
-              endpoint.example.integer <-  1
-            } else {
-              endpoint.example.integer <- which(endpoint.example == x@endpoint.name)
-            }
-            dat <- data.frame(sample.size = rep(pp(x, "n"), times = dim(x)[2]),
-                              theta = rep(pp(x, "theta"), each = dim(x)[1]),
-                              power = c(pp(x, "core")[,,xi.example.integer,endpoint.example.integer]))
-            return(dat)
-          })
-###
-
-
 
 setMethod("merge",
           signature = c(x = "powCalc", y = "powEx"),
@@ -400,6 +404,13 @@ setMethod("plot",
           definition = function(x, ...) {
             plot.power(x, ...)
             })
+
+
+setMethod("inspect",
+          signature = c(object = "power"),
+          definition = function(object){
+            invisible(sampleSize(x = object, inspect = TRUE))
+          })
 
 setMethod("powCalc",
           signature(object="powPar"),
