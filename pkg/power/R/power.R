@@ -28,12 +28,22 @@ setClass("powCalc",
                         endpoint.name = "character",
                         statistic = "function"),
          contains = c("Resample", "powPar"))
+
 ##
 setClass("SampleSize",
          representation(estimate = "integer"))
+
 ##
 setClass("power",
-         contains = c("powCalc", "powEx"))
+         contains = c("powCalc", "powEx"),
+         validity=function(object){
+           ## theta of powEx should be in the range of theta from powCalc
+           if ( object@theta.example > max(object@theta) | object@theta.example < min(object@theta) ){
+             stop("The theta that is chosen for the example should be within the range of evaluated values definded in the object generated with powPar.")
+           }
+           return(TRUE)
+         }
+         )
 
 ## validity=function(object){
 ##   if(length(object@n)!=dim(object@core)[1]) return("the slot \"n\" does not correspond to the dimention of the core")
@@ -43,7 +53,7 @@ setClass("power",
 
 
 
-## ------------------------------------------------------------------ CONSTRUCTORS
+### ------------------------------------------------------------------ CONSTRUCTORS
 powPar <- function(n, theta = NA, xi = NA, ...){
   dots <- as.list(substitute(list(...)))[-1]
   dots.eval <- sapply(dots, eval)
@@ -126,7 +136,7 @@ powEx <- function (theta, xi = NA, endpoint = NA, power = 0.9, drop = 0, method 
 
 
 
-## ------------------------------------------------------------------ METHODS
+### ------------------------------------------------------------------ METHODS
 ### for internal usage only:
 
 setMethod("exDat",
@@ -172,13 +182,13 @@ setMethod("sampleSize",
             dat <- exDat(x)
             ##
             if (max(dat$power, na.rm=TRUE) < min(power.example, na.rm=TRUE) | min(dat$power, na.rm=TRUE)>max(power.example, na.rm=TRUE)) {
-              stop(paste("The power of the example is outside of the observed range for the whole parameter space. The observed range is: ", round(min(dat$power, na.rm=TRUE), 2), "to" , round(max(dat$power, na.rm=TRUE),2), ". There will be no example." , sep = ""))
+              stop(paste("The power of the example is outside of the observed range for the whole parameter space. The observed range is: ", round(min(dat$power, na.rm=TRUE), 2), "to" , round(max(dat$power, na.rm=TRUE),2), ". There will be no example." , sep = ""), call. = FALSE)
             }
             ##
             dat.example <- dat[dat$theta == theta.example & dat$power > 0 & dat$power < 1, ]
             ##
             if (max(dat.example$power, na.rm=TRUE) < min(power.example, na.rm=TRUE) | min(dat.example$power, na.rm=TRUE)>max(power.example, na.rm=TRUE)) {
-              warning(paste("The power of the example is outside of the observed range. The observed range is: ", round(min(dat.example$power, na.rm=TRUE), 2), "to" , round(max(dat.example$power, na.rm=TRUE),2), ". There will be no example." , sep = ""))
+              warning(paste("The power of the example is outside of the observed range. The observed range is: ", round(min(dat.example$power, na.rm=TRUE), 2), "to" , round(max(dat.example$power, na.rm=TRUE),2), ". There will be no example." , sep = ""), call. = FALSE)
              method <- "na" # by setting the method to na sample size is not estimated but set to NA
             }
             ##
@@ -282,7 +292,15 @@ setMethod("sampleSize",
 
 plot.power <- function(x, at = c(0.9, 0.8, 0.85, 0.95), smooth = FALSE, example = TRUE, ...){
   object <-  x
+### some tests
+  ## only plot if dimenstion are ok
+  if (any(dim(object)[1:2]<2)) {
+    sample.size <- sampleSize(object) # this allows the programmer to see the estimated sample size
+    stop("For creating a power plot the vectors of theta and n (defined in the powPar-object) should have at least a length of two.", call. = FALSE)
+  }
+###
   dat <- exDat(object)
+### handling the smooth-argument
   if (smooth) {
     span <- 0.5
     dat[!is.na(dat$power) & dat$power > 0 & dat$power < 1, "power"] <- fitted(loess(power ~ theta + sample.size, data=dat[!is.na(dat$power) & dat$power > 0 & dat$power < 1, ], span=span))
@@ -297,6 +315,7 @@ plot.power <- function(x, at = c(0.9, 0.8, 0.85, 0.95), smooth = FALSE, example 
   }else{
     span <- 0.75
   }
+### handling the example
   if (example){
     sample.size <- sampleSize(object)@estimate
     if (is.na(sample.size)) {
@@ -306,14 +325,14 @@ plot.power <- function(x, at = c(0.9, 0.8, 0.85, 0.95), smooth = FALSE, example 
     power.example <- object@power.example
     theta.example <- object@theta.example
   }
-### at argument
+### handling the at-argument
   if(!is.numeric(at)){stop("The argument \"at\" has to be numeric")}
   if(any(at<=0) | any(at>=1)){stop("The argument \"at\" has to be between of 0 and 1")}
   at.main<- c(at[1], at[1]*1.00000000001)
   at.second <- at[-1]
   if(length(at.second==1)){ at.second=c(at.second, at.second*1.0000000001)}
   rm(at)
-###
+### creating the power plot
   cp <- contourplot(power ~ theta + sample.size,
                     data = dat,
                     ...,
@@ -321,7 +340,7 @@ plot.power <- function(x, at = c(0.9, 0.8, 0.85, 0.95), smooth = FALSE, example 
                     panel = function(x,y,z,at,labels,...){
                       panel.contourplot(x, y, z, at = at.main, cut = 2, lwd = 4, col = grey(0.6), label.style = "align", 
                                         labels = list(cex = 1.1, labels = paste("Power = ", round(at.main,3), sep = ""), col = grey(0.1)), ...)
-                                        # label.syle causes often a conflict with the arrows ... experience shows that "align" here and "mixed" for the others is probably best, perhaps the user choice would make sense
+                      ## label.syle causes often a conflict with the arrows ... experience shows that "align" here and "mixed" for the others is probably best, perhaps the user choice would make sense
                       if(length(at.second) >= 1){
                         panel.contourplot(x, y, z, at = at.second, cut=2, lwd = 1, col = grey(0.7),
                                           label.style = "align", labels = list(label.style = "align", labels = as.character(round(at.second,3)), col = grey(0.1)), ...)
@@ -338,7 +357,7 @@ plot.power <- function(x, at = c(0.9, 0.8, 0.85, 0.95), smooth = FALSE, example 
     print(cp)
 }
 
-### ------------------------------------------------------------------
+### ------------------------------------------------------------------ METHODS
 ### for users usage also:
 
 setMethod("merge",
@@ -367,7 +386,6 @@ setMethod("tex", signature(x="power", type = "character"),
                    nEval = {ceiling(sampleSize(x)@estimate)},
                    {"undefinded sting provided for the argument type"}) # not used as long as match.arg is used because mach.arg returns with an error if it does not match!
           })
-
 
 setMethod("pp", signature(object="powPar"), function(object, name){
   ##
