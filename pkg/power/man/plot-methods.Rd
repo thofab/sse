@@ -21,7 +21,8 @@
 	\item{\code{smooth} a logical that indicates if the countour should be
 	smoothed. If TRUE a span of 0.5 will be used alternatively the
 	argument smooth can also take a numeric value between 0 and 1
-	that will be used for smoothing.}
+	that will be used for smoothing. See the documentation of the
+	function \code{loess} for details.}
       \item{\code{example} a logical indicating if an example should be
 	drawn or not. An example is an arrow that points from the
 	particular \code{theta} on the x-axis to the contour line and to

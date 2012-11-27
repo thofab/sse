@@ -1,5 +1,7 @@
 \name{n}
 \alias{n}
+\alias{n-methods}
+\alias{n,powPar-method}
 \title{Extracting the actual n}
 \description{
   Extracting the actual \code{n} from a \code{powPar}-object.
@@ -21,7 +23,7 @@ also set to be the actual.
 This allows to use this method also outside the evaluation for testing
 the power function.
 }
-\value{A numeric value.}
+\value{An integer.}
 \note{Do not use the method \code{pp} inside the power-function
   because this would extract the whole sequence of \code{n}.}
 \examples{
@@ -31,7 +33,10 @@ psi <- powPar(muA = 0,
               sB = round(seq(from = 0.5, to = 1.5, by = 0.05), 2),
               n = round(seq(from = 10, to = 30, by = 2),0),
               theta.name = "sB")
+## extracting all elements of psi individually
 n(psi)
+## extracting all elements of psi
+pp(psi, name = "n")
 ## an example of usage
 powFun <- function(psi){
   power.t.test(n = n(psi),
