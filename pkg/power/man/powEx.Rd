@@ -5,9 +5,8 @@
   Constructing an object of class powEx.
 }
 \description{
-A function for contrating an object of class \code{powEx} used for
+A function for constructing an object of class \code{powEx} used for
 drawing an example in a sensitivity plot and for evaluating sample size.
-
 }
 \usage{powEx(theta, xi = NA, endpoint = NA, power = 0.9, drop = 0,
 method = c("default", "lm", "step"), lm.range = 0.2, forceDivisor = FALSE)}
@@ -30,7 +29,10 @@ method = c("default", "lm", "step"), lm.range = 0.2, forceDivisor = FALSE)}
   predicting the sample size. The method "step" returns the last element
   in the sequence of sample sizes - power pairs, sorted with decreasing power, where the power is above the power defined for the example.}
   \item{lm.range}{The range of evaluations that are used for estimating
-    power. See argument \code{method} for details.}
+    the sample size if the \code{method} is set or evaluates to
+    "lm". For the default \code{lm.range} = 0.2 this means from80 to
+    120 \% of the power in the example, e.g. for the power of 0.9 this is a
+    range from 0.72 to 1.08. Note that the range is cut at 0 and 1.}
   \item{drop}{Object of class  \code{numeric} (range: 0 to 1), indicating
     how many drop outs are expected in the study. 
     This information is used to calculate the number of subject that
@@ -49,6 +51,8 @@ size for one particular situation (corresponding to a particular
 \code{theta}, \code{xi}, and \code{endpoint} and object of class
 \code{powEx} is needed and such an object can be constructed using the
 function \code{powEx}.
+
+The method for choosing a particular sample size 
 }
 \examples{
 ex <- powEx(theta = 1, drop = 0.1)

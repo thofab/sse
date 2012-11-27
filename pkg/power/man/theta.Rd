@@ -1,5 +1,8 @@
-\name{theta}
+\name{theta-methods}
+\docType{methods}
 \alias{theta}
+\alias{theta-methods}
+\alias{theta,powPar-method}
 \title{
 Extracting the actual theta.
 }
@@ -8,11 +11,12 @@ Extracting the actual theta.
   This method is needed within the function (referred to as
   power-function) needed for evaluating the power.
 }
-\usage{theta(object, ...)}
+\usage{\S4method{theta}{powPar}(object, ...)
+}
 \arguments{
   \item{object}{An object of class \code{powPar}.}
-  \item{...}{.}
-  }
+  \item{...}{Not used.}
+}
 \details{
 During the evaluation process every \code{theta}, from a sequence defined
 in the \code{powPar}-object, needs to be evaluated.

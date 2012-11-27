@@ -234,11 +234,13 @@ setMethod("sampleSize",
                        panel.lines(x = c(fisher(power.borders)), y = p.lm[2:3, 1], col = "red", lty = 1, lwd = 1.5)
                        panel.abline(m.lm$coef, col = "blue", lty = 2)
                        ## showing the chosen power
-                       panel.text(x = fisher(power.example), y = mean(dat.example$sample.size), labels = paste(" power = ", round(power.example, 2), sep = ""), adj = c(0.5, 0), srt = 90, col = "grey")
+                       panel.text(x = min(fisher(power.example)), y = min(dat.example$sample.size), labels = paste(" power = ", round(power.example, 2), sep = ""), adj = c(-0.05, -0.05), srt = 90, col = "grey")
                        panel.abline(v = fisher(power.example), col = "gray")
                        ## showing the chosen sample size
                        panel.abline(h = sample.size, col = "gray")
-                       panel.text(x = mean(fisher(dat.example$power)), y = sample.size, labels = paste(" sample size = ", sample.size, sep = ""), adj = c(0, -0.1), col = "grey")
+                       panel.text(x = min(fisher(dat.example$power)), y = sample.size, labels = paste(" sample size = ", sample.size, sep = ""), adj = c(-0.05, -0.05), col = "grey")
+                       ## showing the method
+                       panel.text(x = min(fisher(dat.example$power)), y = max(y), labels = paste(" method: ", method, " (lm.range = ", lm.range, ")", sep = ""), adj = c(-0.05, 1.1), col = "grey")
                      }
                    },
                    "step" = {
@@ -254,11 +256,13 @@ setMethod("sampleSize",
                        panel.abline(v = fisher(power.example), col = "gray")
 #                       grid.text(label = paste("power = ", round(power.example, 2), sep = ""), x = fisher(power.example), y = unit(0.15, "npc"), just = c(-0.01, 0.5))
                        ## showing the chosen power
-                       panel.text(x = fisher(power.example), y = mean(dat.example$sample.size), labels = paste(" power: ", round(power.example, 2), sep = ""), adj = c(0.5, 0), srt = 90, col = "grey")
-                       panel.points(x = fisher(dat.example$power[element]), y = dat.example$sample.size[element], col = "red")
+                       panel.text(x = min(fisher(power.example)), y = min(dat.example$sample.size), labels = paste(" power: ", round(power.example, 2), sep = ""), adj = c(-0.05, -0.05), srt = 90, col = "grey")
+                       panel.points(x = fisher(dat.example$power[element]), y = dat.example$sample.size[element], col = "red", pch = "*", cex = 4)
                        ## showing the chosen sample size
                        panel.abline(h = sample.size, col = "gray")
-                       panel.text(x = mean(fisher(dat.example$power)), y = sample.size, labels = paste(" sample size: ", sample.size, sep = ""), adj = c(0, -0.1), col = "grey")
+                       panel.text(x = min(fisher(dat.example$power)), y = sample.size, labels = paste(" sample size: ", sample.size, sep = ""), adj = c(-0.05, -0.05), col = "grey")
+                       ## showing the method
+                       panel.text(x = min(fisher(dat.example$power)), y = max(y), labels = paste(" method: ", method, sep = ""), adj = c(-0.05, 1.1), col = "grey")
                      }
                    },
                    "na" = {
@@ -290,7 +294,7 @@ setMethod("sampleSize",
           })
 ### ---------------------------------
 
-plot.power <- function(x, at = c(0.9, 0.8, 0.85, 0.95), smooth = FALSE, example = TRUE, ...){
+plot.power <- function(x, at = c(0.9, 0.8, 0.85, 0.95), smooth = FALSE, example = TRUE, label.pos = 0.75, ...){ # the argument label.pos is not used yet
   object <-  x
 ### some tests
   ## only plot if dimenstion are ok
@@ -310,7 +314,7 @@ plot.power <- function(x, at = c(0.9, 0.8, 0.85, 0.95), smooth = FALSE, example 
     fisher <- function(x) 0.5 * log((1 + x) / (1 - x))
     unfisher <- function(y) (exp(2 * y) -1)/(1 + exp(2 * y))
     fitted.fisher <- fitted(loess(fisher(power) ~ theta + sample.size, data=dat[!is.na(dat$power) & dat$power > 0 & dat$power < 1, ], span = span))
-    cat(summary(fitted.fisher))
+#    cat(summary(fitted.fisher))
     dat[!is.na(dat$power) & dat$power > 0 & dat$power < 1, "power"] <- unfisher(fitted.fisher)
   }else{
     span <- 0.75
@@ -338,18 +342,30 @@ plot.power <- function(x, at = c(0.9, 0.8, 0.85, 0.95), smooth = FALSE, example 
                     ...,
 ###
                     panel = function(x,y,z,at,labels,...){
-                      panel.contourplot(x, y, z, at = at.main, cut = 2, lwd = 4, col = grey(0.6), label.style = "align", 
-                                        labels = list(cex = 1.1, labels = paste("Power = ", round(at.main,3), sep = ""), col = grey(0.1)), ...)
-                      ## label.syle causes often a conflict with the arrows ... experience shows that "align" here and "mixed" for the others is probably best, perhaps the user choice would make sense
+                      panel.contourplot(x, y, z,
+                                        at = at.main,
+                                        cut = 2,
+                                        lwd = 4,
+                                        col = grey(0.6),
+                                        label.style = "align",
+#                                        label.style = "free", label.pos = label.pos, # perhaps for the next version instead of previous line
+                                        labels = list(cex = 1, labels = paste("Power = ", round(at.main,3), sep = ""), col = grey(0.7), adj = c(0.5, -0.5)), ...)
+                      ## label.style causes often a conflict with the arrows ... experience shows that "align" here and "mixed" for the others is probably best, perhaps the user choice would make sense
                       if(length(at.second) >= 1){
-                        panel.contourplot(x, y, z, at = at.second, cut=2, lwd = 1, col = grey(0.7),
-                                          label.style = "align", labels = list(label.style = "align", labels = as.character(round(at.second,3)), col = grey(0.1)), ...)
+                        panel.contourplot(x, y, z,
+                                          at = at.second,
+                                          cut=2,
+                                          lwd = 1,
+                                          col = grey(0.7),
+                                          label.style = "align",
+#                                          label.style = "free", label.pos = label.pos,
+                                          labels = list(labels = as.character(round(at.second,3)), col = grey(0.7), adj = c(0.5, -0.25)), ...)
                       }
                       if (example){
                         grid.lines(x=unit(c(theta.example,theta.example), "native"), y=unit(c(0,sample.size),c("npc","native"))+unit(c(0.02,-0.02),c("npc","npc")), arrow=arrow(length=unit(0.02, "npc")))
                         grid.lines(x=unit(c(theta.example,0),c("native","npc"))+ unit(c(-0.02,0.02),c("npc","npc")), y=unit(c(sample.size,sample.size), "native"), arrow=arrow(length=unit(0.02, "npc")))
                         grid.text(label=paste("N=",sample.size, sep=""),x=unit(0.05, "npc"), y=unit(sample.size,"native"), just=c(0,-0.2))
-                        grid.text(label=bquote(paste(theta,"=", .(theta.example), sep="")),y=unit(0.1, "npc"), x=unit(theta.example,"native"), just=c(0.5,1),rot=-90)
+                        grid.text(label=bquote(paste(theta,"=", .(theta.example), sep="")),y=unit(0.1, "npc"), x=unit(theta.example, "native"), just=c(0.5,-0.2),rot=90)
                         grid.points(x=unit(theta.example, "native"), y=unit(sample.size,"native"), pch=20, size=unit(0.7,"char"))
                       }}
                     )
@@ -530,13 +546,17 @@ setMethod("show",
           signature(object = "power"),
           definition = function(object) {
             cat("*** Class power                      ***\n")
-            cat(paste("The parameter \"", object@theta.name, "\" is used as theta.\n", sep = ""))
+#            cat(paste("The parameter \"", object@theta.name, "\" is used as theta.\n", sep = ""))
+            if(length(object@list) == 0){
+              cat("No additional parameters defined.\n")
+            }else{
             cat("Additional parameters defined:\n")
             for (i in names(object@list)) {
               if (i != object@theta.name) {
               cat(paste("   ",i, ": ", eval(pp(object, i)), "\n", sep = ""))
             }
             }
+          }
             cat("\n")
             cat("Range and dimensions of the power array:\n")
             cat(paste("       n: from ", range(object@n)[1], " to ", range(object@n)[2], " (dim: ", dim(object)[1], ")\n", sep = ""))
@@ -545,8 +565,11 @@ setMethod("show",
             cat(paste("      xi: from ", range(object@xi)[1], " to ", range(object@xi)[2], " (dim: ", dim(object)[3], ")\n", sep = ""))
           }
             cat("\n")
+            cat("Number of iterations:\n")
+            cat(paste("  n.iter: ", object@n.iter, "\n", sep = ""))
+            cat("\n")
             cat("Range of power observed:\n")
-            cat(paste("   Min. ", round(range(object@core, na.rm = TRUE)[1],2), "\n   Max. ",round(range(object@core, na.rm = TRUE)[2],2), "\n"))
+            cat(paste("     Min: ", round(range(object@core, na.rm = TRUE)[1],2), "\n     Max: ",round(range(object@core, na.rm = TRUE)[2],2), "\n"))
             cat("\n")
             cat("Example: Sample size evaluation for:\n")
             if ( !is.na(object@endpoint.example)) {
