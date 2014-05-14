@@ -33,7 +33,7 @@ Objects can be created by calls of the form \code{new("powPar", ...)}.
 	 }
 }
 \references{ none}
-\author{\email{fabbrot@uhbs.ch}}
+\author{\email{thomas.fabbro@unibas.ch}}
 \note{none}
 
 \seealso{

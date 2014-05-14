@@ -17,7 +17,7 @@ none
 \section{Methods}{
 No methods defined with class "SampleSize" in the signature.
 }
-\author{\email{fabbrot@uhbs.ch}}
+\author{\email{thomas.fabbro@unibas.ch}}
 \seealso{none
 }
 \examples{

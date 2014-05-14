@@ -43,7 +43,7 @@ provided to this function by making use of the \code{...} argument.
 \value{An object of the class \code{powPar}}
 \examples{
 
-library(power)
+library(sse)
 psi <- powPar(n = seq(from = 20, to = 60, by = 2),
               theta = seq(from = 0.5, to = 1.5, by = 0.05)
               )
