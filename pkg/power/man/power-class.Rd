@@ -42,7 +42,7 @@ Class \code{"\linkS4class{powPar}"}, by class "powCalc", distance 2.
     \item{show}{\code{signature(object = "power")}: ... }
 	 }
 }
-\author{\email{fabbrot@uhbs.ch}}
+\author{\email{thomas.fabbro@unibas.ch}}
 \examples{
 showClass("power")
 }

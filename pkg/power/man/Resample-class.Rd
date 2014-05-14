@@ -16,7 +16,7 @@ Objects can be created by calls of the form \code{new("Resample", ...)}.
 \section{Methods}{
 No methods defined with class "Resample" in the signature.
 }
-\author{\email{fabbrot@uhbs.ch}}
+\author{\email{thomas.fabbro@unibas.ch}}
 \seealso{\code{"powCalc"}
 }
 \examples{

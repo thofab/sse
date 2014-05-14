@@ -5,7 +5,7 @@
 %\VignetteIndexEntry{examples}
 \begin{document}
 % ----------------------------------------------------------------------------
-\title{The \textsf{power}-Package:\\ Commented Examples}
+\title{The \textsf{sse}-Package:\\ Commented Examples}
 \author{Thomas Fabbro}%thomas.fabbro@unibas.ch
 \date{10. May 2014}
 \maketitle
@@ -32,12 +32,11 @@ source("~/repos/lib/rForge/power/pkg/power/R/AllGenerics.R")
 source("~/repos/lib/rForge/power/pkg/power/R/power.R")
 # for plotting
 library(lattice)
-
 @ 
 
 
 <<>>=
-library(power)
+library(sse)
 @ 
 % ---------------------------------
 \section{Starting with a minimal example}
@@ -52,7 +51,6 @@ We investigate the power for a range of effect sizes (0.5 to 1.5) and a range of
 
 psi <- powPar(theta = seq(from = 0.5, to = 1.5, by = 0.05),
               n = seq(from = 20, to = 60, by = 2))
-
 @ 
 
 
@@ -69,18 +67,16 @@ powFun <- function(psi)
                       delta = theta(psi),
                       sig.level = 0.05)$power)
 }
-
 @ 
 
 
 %%
-In the third step we create an object of class \textsf{powCalc} unsing a function with the same name.
+In the third step we create an object of class \textsf{powCalc} using a function with the same name.
 The function \emph{powCalc} evaluates the function we created in the last step using the \textsf{powPar} object of the first step.
 
 <<pCmini>>=
 
 calc <- powCalc(psi, statistic = powFun)
-
 @ 
 
 
@@ -100,7 +96,6 @@ A method called \textsf{merge} allows us to create one single object of class \t
 <<pMmini>>=
 
 pow <- merge(calc, ex)
-
 @ 
 
 
@@ -111,7 +106,6 @@ But before we start we have a look at the relationship between the power and the
 <<inspectmini, fig = true>>=
 
 inspect(pow)
-
 @ 
 
 \begin{figure}[H]
@@ -120,7 +114,7 @@ inspect(pow)
   \caption{We see on the x-axis the observed range of power and on the y-axis the range of sample sizes.
 The dots represent the individual values that were calculated.
 The red star shows which sample size, \Sexpr{tex(pow, "nEval")}, was chosen for reporting.
-The method ``step'' allways takes the first sample size that is larger than the power chosen (note: the power for n = 44 is \Sexpr{round(power.t.test(n = 22, delta = 1, sd = 1, power = NULL)$power, 4)}).
+The method ``step'' always takes the first sample size that is larger than the power chosen (note: the power for n = 44 is \Sexpr{round(power.t.test(n = 22, delta = 1, sd = 1, power = NULL)$power, 4)}).
 }
   \label{fig_inspectmini}
 \end{figure}
@@ -136,7 +130,6 @@ plot(pow,
      xlab = "Effect size",
      ylab = "Total sample size", 
      label.pos = c(0,1))
-#
 @ 
 
 \begin{figure}[H]
@@ -176,7 +169,7 @@ powFun.resample <- function(psi)
 
 
 Also the call of the function powCalc has to be changed slightly.
-Wheras in the minimal example the ``power function'' was evaluated only once per combination of \emph{theta} and \emph{n} it will now be evaluated several times \footnote{Note: the number of iterations (n.iter = 99) is to small and only for illustrative purpose!} to be able to calculate the power as the proportion of significant evaluations.
+Whereas in the minimal example the ``power function'' was evaluated only once per combination of \emph{theta} and \emph{n} it will now be evaluated several times \footnote{Note: the number of iterations (n.iter = 99) is to small and only for illustrative purpose!} to be able to calculate the power as the proportion of significant evaluations.
 
 <<pCresample, eval = true>>=
 
@@ -184,10 +177,12 @@ calc.resample <- powCalc(psi, statistic = powFun.resample, n.iter = 99)
 @ 
 
 <<echo=FALSE, eval = false>>=
+
 save(calc.resample, file = "dat/calc.resample.rda")
 @ 
 
 <<echo=FALSE, eval = false>>=
+
 load(file = "dat/calc.resample.rda")
 @ 
 
@@ -204,7 +199,7 @@ pow.resample <- merge(calc.resample, ex)
 As in the minimal example we will now be able to inspect the estimation.
 The choose a sample size based on the evaluations there are two different methods (they can be addressed using the argument ``method'' of the function \emph{powEx}.
 The default method for the resampling approach is called ``lm''.
-Therefoe a linear regression is fit to the transformed values and used for estimating the sample size where the power is equal to the value asked.
+Therefor a linear regression is fit to the transformed values and used for estimating the sample size where the power is equal to the value asked.
 To see if the fit of the regression model is reasonable it is important to have a look at the inspection plot.
 
 <<inspectresample, fig = true>>=

@@ -29,7 +29,7 @@ Objects can be created by calls of the form \code{new("powEx", ...)}.
     \item{merge}{\code{signature(x = "powCalc", y = "powEx")}: ... }
 	 }
 }
-\author{\email{fabbrot@uhbs.ch}}
+\author{\email{thomas.fabbro@unibas.ch}}
 \examples{
 ##showClass("powEx")
 }

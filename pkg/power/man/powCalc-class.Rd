@@ -42,7 +42,7 @@ Class \code{"\linkS4class{powPar}"}, directly.
 	 }
 }
 \references{ none }
-\author{ \email{fabbrot@uhbs.ch} }
+\author{ \email{thomas.fabbro@unibas.ch} }
 \note{ none }
 \examples{
 showClass("powCalc")
