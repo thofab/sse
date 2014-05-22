@@ -30,10 +30,9 @@ the power function.
 psi <- powPar(muA = 0,
               muB = 1,
               sA = 1,
-              sB = round(seq(from = 0.5, to = 1.5, by = 0.05), 2),
-              n = round(seq(from = 10, to = 30, by = 2),0),
-              theta.name = "sB")
-## extracting all elements of psi individually
+              theta = round(seq(from = 0.5, to = 1.5, by = 0.05), 2),
+              n = round(seq(from = 10, to = 30, by = 2),0))
+## extracting all elements of psi individually, starting with the first
 n(psi)
 ## extracting all elements of psi
 pp(psi, name = "n")
