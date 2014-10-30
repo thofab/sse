@@ -1,4 +1,4 @@
-setClass("powPar", 
+setClass("powPar",
          representation(list = "list",
                         theta = "numeric",
                         theta.name = "character",
@@ -79,7 +79,7 @@ powPar <- function(n, theta = NA, xi = NA, ...){
       theta.name <- as.character(NA)
     }
   }
-  ## handling of xi 
+  ## handling of xi
   if( all(is.na(xi)) ){
     if( any(names(dots.eval) == "xi.name") ){
       xi <- dots.eval[[xi.name]]
@@ -470,17 +470,17 @@ setMethod("powCalc",
     }
     empirical.endpoints <- power.fun(statistic, object)
   }
-  
+
   ## to find out the number of endpoints and their name(s) we run the statistics function once
   n.endpoint <- length(empirical.endpoints)
   endpoint.name <- names(empirical.endpoints)
   if (is.null(endpoint.name)) {endpoint.name <- paste("ep", seq(1, n.endpoint), sep = "")}
 
-  ## 
+  ##
   power.array <- array(NA, dim=c(dim(object), n.endpoint))
 
   ## enable parallel computing (zumbrunnt)
-  if (is.null(cluster) | is.na(n.iter) ) {
+  if (is.null(cluster) || is.na(n.iter) || !require(parallel) ) {
 
     ## original version (fabbrot)
     for (n.i in seq(along = object@n)){
@@ -500,12 +500,12 @@ setMethod("powCalc",
       }                                 # theta.loop
       cat(paste("n:", object@n.act, Sys.time(), "\n"))
     }                                   # n.loop
-    
+
   } else {
 
     ## parallelised version (zumbrunnt)
-    library(snow)
-    clusterEvalQ(cluster, library(power))
+    clusterEvalQ(cluster, library(parallel))
+    clusterEvalQ(cluster, library(sse))
     for (theta.i in seq(along = object@theta)) {
       for (xi.i in seq(along = object@xi)) {
         object@theta.act <- object@theta[theta.i]
@@ -515,18 +515,23 @@ setMethod("powCalc",
           object@n.act <- object@n[n.i]
           objects[[n.i]] <- object
         }
-        power.array[seq(along = object@n), theta.i, xi.i, ] <-
-          parSapply(cluster,
-                    objects,
-                    function(x) power.fun(statistic, x, n.iter))
+        if (!is.na(n.iter)) {
+          power.array[seq(along = object@n), theta.i, xi.i, ] <-
+            parSapply(cluster,
+                      objects,
+                      function(x) power.fun(statistic, x))
+        } else {
+          power.array[seq(along = object@n), theta.i, xi.i, ] <-
+            parSapply(cluster,
+                      objects,
+                      function(x) power.fun(statistic, x, n.iter))
+        }
         cat(paste("theta:", object@theta.act, Sys.time(), "\n"))
-        ## temporary hack to have non-null endpoint.name (zumbrunnt)
-        endpoint.name[xi.i] <- letters[xi.i]
       }
     }
 
   }
-  
+
   ## seting the xy.act to NA, to avoid later use (instead of xy.example)
   object@n.act <- as.integer(NA)
   object@theta.act <- as.numeric(NA)
