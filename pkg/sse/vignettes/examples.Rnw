@@ -57,7 +57,7 @@ psi <- powPar(theta = seq(from = 0.5, to = 1.5, by = 0.05),
 %%
 In a second step we write a function that calculates the power.
 The function should take only one argument, the object of class \textsf{powPar} we created in the last step.
-Two methods called \emph{n} and \emph{theta} allow to extract the elements of the object individually during evaluation.
+Two methods called \textsf{n} and \textsf{theta} allow to extract the elements of the object individually during evaluation.
 
 <<pFmini>>=
 
@@ -72,7 +72,7 @@ powFun <- function(psi)
 
 %%
 In the third step we create an object of class \textsf{powCalc} using a function with the same name.
-The function \emph{powCalc} evaluates the function we created in the last step using the \textsf{powPar} object of the first step.
+The function \textsf{powCalc} evaluates the function we created in the last step using the \textsf{powPar} object of the first step.
 
 <<pCmini>>=
 
@@ -81,7 +81,7 @@ calc <- powCalc(psi, statistic = powFun)
 
 
 %%
-The ``hidden'' result of the last steps is a matrix that contains the power of all combinations of \emph{n} and \emph{theta}.
+The ``hidden'' result of the last steps is a matrix that contains the power of all combinations of \textsf{n} and \textsf{theta}.
 Now we need to define for which theta we would like to know the sample size with a certain power.
 
 <<pEmini>>=
@@ -111,7 +111,7 @@ inspect(pow)
 \begin{figure}[H]
   \centering
   \includegraphics{ex-inspectmini.pdf}
-  \caption{We see on the x-axis the observed range of power and on the y-axis the range of sample sizes.
+  \caption{Inspection plot of the minimal example: We see on the x-axis the observed range of power and on the y-axis the range of sample sizes.
 The dots represent the individual values that were calculated.
 The red star shows which sample size, \Sexpr{tex(pow, "nEval")}, was chosen for reporting.
 The method ``step'' always takes the first sample size that is larger than the power chosen (note: the power for n = 44 is \Sexpr{round(power.t.test(n = 22, delta = 1, sd = 1, power = NULL)$power, 4)}).
@@ -122,7 +122,7 @@ The method ``step'' always takes the first sample size that is larger than the p
 
 
 %% 
-Finally we can generate a ``power plot'' showing the sensitivity of the sample size estimation to the effect size, theta.
+Finally we can generate a ``power plot'' showing the sensitivity of the sample size estimation to the effect size, theta (figure \ref{fig:plotmini}).
 
 <<plotmini, fig = true>>=
 
@@ -135,27 +135,27 @@ plot(pow,
 \begin{figure}[H]
   \centering
   \includegraphics{ex-plotmini.pdf}
-  \caption{}
+  \caption{``Power plot'' of the minimal example: Showing how sensitive the estimated sample size is with respect to the effect size. The arrows indicate how to read the figure for the given example.}
   \label{fig:plotmini}
 \end{figure}
 
 
 %%
-To be able to extract the estimate from the \textsf{power}-object for the integration in Sweave documents there is a method called \emph{tex}.
+To be able to extract the estimate from the \textsf{power}-object for the integration in Sweave documents there is a method called \textsf{tex}.
 The call 
 <<texmini, results = verbatim>>=
 
 tex(pow, type = "nEval")
 @ 
 
-returns the string ``\Sexpr{tex(pow, type = "nEval")}'' and can be used as \verb|\Sexpr{tex(pow, type = "nEval")}|.
+returns the string ``\Sexpr{tex(pow, type = "nEval")}'' and can be used directly within the Sweave document e.g. with the \LaTeX-command ``Sexpr''.
 
 % ---------------------------------
 \section{Using a resampling approach}
 
 To illustrate the resampling approach we take the same example as before but we compare the two groups with a wilcoxon test.
 Note the difference in the function we define.
-Whereas the function return the power of a combination of \emph{theta} and \emph{n} it returns a logical, indicating if the test was statistically significant or not.
+Whereas the former function \textsf{powFun} returns the power of a combination of \textsf{theta} and \textsf{n} the function \textsf{powFun.resample} defined below returns a logical, indicating if the test was statistically significant or not.
 
 <<pFresample, eval = true, echo = true>>=
 
@@ -169,7 +169,7 @@ powFun.resample <- function(psi)
 
 
 Also the call of the function powCalc has to be changed slightly.
-Whereas in the minimal example the ``power function'' was evaluated only once per combination of \emph{theta} and \emph{n} it will now be evaluated several times \footnote{Note: the number of iterations (n.iter = 99) is to small and only for illustrative purpose!} to be able to calculate the power as the proportion of significant evaluations.
+Whereas in the minimal example the ``power function'' was evaluated only once per combination of \textsf{theta} and \textsf{n} it will now be evaluated several times \footnote{Note: the number of iterations (n.iter = 99) is to small and only for illustrative purpose!} to be able to calculate the power as the proportion of significant evaluations.
 
 <<pCresample, eval = true>>=
 
@@ -197,10 +197,10 @@ pow.resample <- merge(calc.resample, ex)
 
 
 As in the minimal example we will now be able to inspect the estimation.
-The choose a sample size based on the evaluations there are two different methods (they can be addressed using the argument ``method'' of the function \emph{powEx}.
+To choose a sample size based on the evaluations there are two different methods (they can be addressed using the argument ``method'' of the function \textsf{powEx}).
 The default method for the resampling approach is called ``lm''.
 Therefor a linear regression is fit to the transformed values and used for estimating the sample size where the power is equal to the value asked.
-To see if the fit of the regression model is reasonable it is important to have a look at the inspection plot.
+To see if the fit of the regression model is reasonable it is important to have a look at the inspection plot (figure \ref{fig_inspectmini}).
 
 <<inspectresample, fig = true>>=
 
@@ -210,10 +210,10 @@ inspect(pow.resample)
 \begin{figure}[H]
   \centering
   \includegraphics{ex-inspectresample.pdf}
-  \caption{We see on the x-axis the observed range of power and on the y-axis the range of sample sizes.
+  \caption{Inspection plot of the resampling example: We see on the x-axis the observed range of power and on the y-axis the range of sample sizes.
 The dots represent the individual values that were calculated.
 The red line shows the regression line used for estimation.
-By default only the data in the neighbourhood of the power in focus is used for estimating the regression line (the size of the neighbourhood can be chosen using the argument lm.range of the function \emph{powEx}).
+By default only the data in the neighbourhood of the power in focus is used for estimating the regression line (the size of the neighbourhood can be chosen using the argument lm.range of the function \textsf{powEx}).
 }
   \label{fig_inspectmini}
 \end{figure}
@@ -231,7 +231,7 @@ Also the call
 <<eval = false, echo = true>>=
 tex(pow.resample, type = "n.iter")
 @ 
-returning the number of iterations for each combination of \emph{theta} and \emph{n} might be useful.
+returning the number of iterations for each combination of \textsf{theta} and \textsf{n} might be useful.
 % ----------------------------------------------------------------------------
 \end{document}
 

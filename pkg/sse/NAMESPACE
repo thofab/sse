@@ -1,5 +1,5 @@
 importFrom(graphics, plot)
-import(lattice,methods)
+import(lattice,methods,grid)
 export("powPar",
        "powEx"
        )
