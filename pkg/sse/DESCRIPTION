@@ -5,7 +5,7 @@ Version: 0.5-4
 Date: 2015-04-14
 Author: Thomas Fabbro
 Maintainer: Thomas Fabbro <thomas.fabbro@unibas.ch>
-Description: Provides functions to evaluate user-defined power functions for a parameter range, and draws a sensitivity plot. It also provides a resampling procedure for semi-parametric sample size estimation and methods for adding informations to a Sweave report.
+Description: Provides functions to evaluate user-defined power functions for a parameter range, and draws a sensitivity plot. It also provides a resampling procedure for semi-parametric sample size estimation and methods for adding information to a Sweave report.
 License: GPL-3
 LazyLoad: yes
 Depends: R (>= 2.5.0), methods, grid, lattice, graphics, base, stats
