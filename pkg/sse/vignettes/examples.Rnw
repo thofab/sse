@@ -7,7 +7,7 @@
 % ----------------------------------------------------------------------------
 \title{The \textsf{sse}-Package:\\ Commented Examples}
 \author{Thomas Fabbro}%thomas.fabbro@unibas.ch
-\date{10. May 2014}
+\date{3. May 2016}
 \maketitle
 % ---------------------------------
 \SweaveOpts{echo=true,results=hide,include=false,eps=false,strip.white=false,pdf.version=1.4,prefix.string=ex}
@@ -128,8 +128,7 @@ Finally we can generate a ``power plot'' showing the sensitivity of the sample s
 
 plot(pow,
      xlab = "Effect size",
-     ylab = "Total sample size", 
-     label.pos = c(0,1))
+     ylab = "Total sample size")
 @ 
 
 \begin{figure}[H]

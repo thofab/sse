@@ -211,7 +211,7 @@ setMethod("sampleSize",
                      m.lm.range <- lm(sample.size ~ fisher(power), data = dat.example.range)
                      p.lm <- predict(m.lm.range, interval = "confidence", newdata = data.frame(power = c(power.example, power.borders)))
                      sample.size <- ceiling(p.lm[1, 1])
-                     cat(paste("estimator: ", sample.size,
+                     message(paste("estimator: ", sample.size,
                                "\n95%CI: [", paste(round(p.lm[1, c("lwr", "upr")]), collapse = "; " ), "]\n"))
                      ## forceDivisor handling
                      if ( forceDivisor ){
@@ -224,7 +224,7 @@ setMethod("sampleSize",
                        }
                        if ( sample.size%%divisor ) {
                          sample.size <- sample.size + (divisor - sample.size%%divisor)
-                         cat(paste("Returning ", sample.size, " instead of the estimator to achieve a divisibility with the divisor ", divisor,".", "\n", sep = ""))
+                         message(paste("Returning ", sample.size, " instead of the estimator to achieve a divisibility with the divisor ", divisor,".", "\n", sep = ""))
                        }
                      }
                      mypanel <- function(x, y, ...) {
@@ -294,7 +294,7 @@ setMethod("sampleSize",
           })
 ### ---------------------------------
 
-plot.power <- function(x, at = c(0.9, 0.8, 0.85, 0.95), smooth = FALSE, example = TRUE, label.pos = 0.75, ...){ # the argument label.pos is not used yet
+plot.power <- function(x, at = c(0.9, 0.8, 0.85, 0.95), smooth = FALSE, example = TRUE, label.pos = 0.75, reflines = TRUE, ...){ # the argument label.pos is not used yet
   object <-  x
 ### some tests
   ## only plot if dimenstion are ok
@@ -336,12 +336,39 @@ plot.power <- function(x, at = c(0.9, 0.8, 0.85, 0.95), smooth = FALSE, example 
   at.second <- at[-1]
   if(length(at.second==1)){ at.second=c(at.second, at.second*1.0000000001)}
   rm(at)
+###
+  xscale.components.theta <- function(lim, ...){
+      ans <- xscale.components.default(lim = lim, ...)
+      tick.at <- round(ans$bottom$ticks$at,10)
+      cat(tick.at)
+      cat("\n")
+      theta.tick.at <- round(object@theta,10)
+      cat(theta.tick.at)
+            cat("\n")
+      major <- theta.tick.at %in%  tick.at
+      cat(major)
+            cat("\n")
+      ans$bottom$ticks$at <- theta.tick.at
+      tck <- rep(0.75, length.out = length(theta.tick.at))
+      tck[major] <- 1.5
+      ans$bottom$ticks$tck <- tck# ifelse(major, 1.5, 0.75)
+      ans$bottom$labels$at <- tick.at
+      ans$bottom$labels$labels <- as.character(tick.at)
+      print(ans)
+      ans
+  }
 ### creating the power plot
   cp <- contourplot(power ~ theta + sample.size,
                     data = dat,
                     ...,
+#                    xscale.components = xscale.components.theta,
+#                    scales = list(x = list(tick.number = 10)),
 ###
-                    panel = function(x,y,z,at,labels,...){
+                    panel = function(x,y,z,at,labels, ...){
+                        if (reflines){
+                            panel.refline(v = object@theta)
+                            panel.refline(h = object@n)
+                        }
                       panel.contourplot(x, y, z,
                                         at = at.main,
                                         cut = 2,
@@ -352,7 +379,7 @@ plot.power <- function(x, at = c(0.9, 0.8, 0.85, 0.95), smooth = FALSE, example 
                                         labels = list(cex = 1, labels = paste("Power = ", round(at.main,3), sep = ""), col = grey(0.7), adj = c(0.5, -0.5)), ...)
                       ## label.style causes often a conflict with the arrows ... experience shows that "align" here and "mixed" for the others is probably best, perhaps the user choice would make sense
                       if(length(at.second) >= 1){
-                        panel.contourplot(x, y, z,
+                      panel.contourplot(x, y, z,
                                           at = at.second,
                                           cut=2,
                                           lwd = 1,
@@ -367,7 +394,8 @@ plot.power <- function(x, at = c(0.9, 0.8, 0.85, 0.95), smooth = FALSE, example 
                         grid.text(label=paste("N=",sample.size, sep=""),x=unit(0.05, "npc"), y=unit(sample.size,"native"), just=c(0,-0.2))
                         grid.text(label=bquote(paste(theta,"=", .(theta.example), sep="")),y=unit(0.1, "npc"), x=unit(theta.example, "native"), just=c(0.5,-0.2),rot=90)
                         grid.points(x=unit(theta.example, "native"), y=unit(sample.size,"native"), pch=20, size=unit(0.7,"char"))
-                      }}
+                      }
+                    }
                     )
     class(cp) <- "trellis"
     print(cp)
@@ -506,8 +534,8 @@ setMethod("powCalc",
     ## parallelised version (zumbrunnt)
     clusterEvalQ(cluster, library(parallel))
     clusterEvalQ(cluster, library(sse))
-    for (theta.i in seq(along = object@theta)) {
-      for (xi.i in seq(along = object@xi)) {
+    for (theta.i in seq(along = object@theta)) {#theta.loop
+      for (xi.i in seq(along = object@xi)) {# xi.loop
         object@theta.act <- object@theta[theta.i]
         object@xi.act <- object@xi[xi.i]
         objects <- list()
@@ -516,15 +544,15 @@ setMethod("powCalc",
           objects[[n.i]] <- object
         }
         if (!is.na(n.iter)) {
-          power.array[seq(along = object@n), theta.i, xi.i, ] <-
-            parSapply(cluster,
+          power.array[, theta.i, xi.i, ] <-
+            t(parSapply(cluster,
                       objects,
-                      function(x) power.fun(statistic, x))
+                      function(x) power.fun(statistic, x)))
         } else {
-          power.array[seq(along = object@n), theta.i, xi.i, ] <-
-            parSapply(cluster,
+          power.array[, theta.i, xi.i, ] <-
+            t(parSapply(cluster,
                       objects,
-                      function(x) power.fun(statistic, x, n.iter))
+                      function(x) power.fun(statistic, x, n.iter)))
         }
         cat(paste("theta:", object@theta.act, Sys.time(), "\n"))
       }
