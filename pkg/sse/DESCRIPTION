@@ -1,8 +1,8 @@
 Package: sse
 Type: Package
 Title: Sample Size Estimation
-Version: 0.5-4
-Date: 2015-04-14
+Version: 0.5-5
+Date: 2016-05-03
 Author: Thomas Fabbro
 Maintainer: Thomas Fabbro <thomas.fabbro@unibas.ch>
 Description: Provides functions to evaluate user-defined power functions for a parameter range, and draws a sensitivity plot. It also provides a resampling procedure for semi-parametric sample size estimation and methods for adding information to a Sweave report.
