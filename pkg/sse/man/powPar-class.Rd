@@ -2,14 +2,20 @@
 \Rdversion{1.1}
 \docType{class}
 \alias{powPar-class}
+\alias{n,powPar-method}
+\alias{theta,powPar-method}
+\alias{xi,powPar-method}
+\alias{pp,powPar-method}
 \alias{dim,powPar-method}
+\alias{powCalc,powPar-method}
 
 \title{Class "powPar"}
-\description{A class needed to calculate the power array. It containing
-  all the parameters needed to feed a function that calculates the power. These are either numbers or vectors of numbers.}
-\section{Objects from the Class}{
-Objects can be created by calls of the form \code{new("powPar", ...)}.
-
+\description{A class used internally. Contains all the parameters
+  needed to feed the \"power function\".
+  For users there is a function
+  \code{\link{powPar}} that constructs objects of this class and there are
+  several functions for extracting information \code{\link{n}},
+  \code{\link{theta}}, \code{\link{xi}}, \code{\link{pp}}.
 }
 \section{Slots}{
   \describe{
@@ -27,14 +33,13 @@ Objects can be created by calls of the form \code{new("powPar", ...)}.
     \item{\code{n.act}:}{Object of class \code{"integer"} ~~ }
   }
 }
-\section{Methods}{
-  \describe{
-    \item{dim}{\code{signature(x = "powPar")}: ... }
-	 }
+\usage{
+\S4method{theta}{powPar}(x)
+\S4method{n}{powPar}(x)
+\S4method{xi}{powPar}(x)
+\S4method{pp}{powPar,character}(x, name)
+\S4method{dim}{powPar}(x)
 }
-\references{ none}
-\author{\email{thomas.fabbro@unibas.ch}}
-\note{none}
 
 \seealso{
 \code{\link{powPar}},\code{\linkS4class{power}}
@@ -42,4 +47,5 @@ Objects can be created by calls of the form \code{new("powPar", ...)}.
 \examples{
 ## showClass("powPar")
 }
+\keyword{internal}
 \keyword{classes}

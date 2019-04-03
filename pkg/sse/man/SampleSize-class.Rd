@@ -23,4 +23,5 @@ No methods defined with class "SampleSize" in the signature.
 \examples{
 showClass("SampleSize")
 }
+\keyword{internal}
 \keyword{classes}

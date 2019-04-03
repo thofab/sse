@@ -1,16 +1,24 @@
-importFrom(graphics, plot)
-import(lattice,methods,grid)
-export("powPar",
-       "powEx"
-       )
-exportClasses("powPar", "powEx", "power")
+importFrom("graphics", "plot")
+import("lattice")
+import("methods")
+import("grid")
+import("parallel")
+importClassesFrom("parallel")
+importFrom("grDevices", "grey")
+importFrom("stats", "fitted", "lm", "loess", "predict")
+importFrom("utils", "tail")
+importFrom("stats", "pnorm", "qnorm")
+export("powPar")
+#exportClasses("powPar", "powEx", "power")
 exportMethods("inspect",
-              "powCalc",
-              "pp",
               "n",
-              "theta",
-              "xi",
+              "plot",
+              "powCalc",
+              "powEx",
+              "pp",
+              "refine",
               "tex",
-              ## not generic
-              "merge",
-              "plot")
+              "theta",
+              "update",
+              "xi"
+              )

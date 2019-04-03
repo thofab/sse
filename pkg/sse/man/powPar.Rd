@@ -5,7 +5,7 @@
 }
 \description{
 A function for constructing an object of class \code{powPar}. Such an
-object is used for evaluating the user defined``power function'' for a parameter range.
+object is used for evaluating the user defined ``power function'' for a parameter range.
 All information that is needed for calculating the power should be
 provided to this function by making use of the \code{...} argument.
 }
@@ -42,32 +42,25 @@ provided to this function by making use of the \code{...} argument.
 }
 \value{An object of the class \code{powPar}}
 \examples{
-
-library(sse)
+## defining the range of n and theta to be evaluated
 psi <- powPar(n = seq(from = 20, to = 60, by = 2),
               theta = seq(from = 0.5, to = 1.5, by = 0.05)
               )
+
+## defining a power-function  
 powFun <- function(psi){
   return(power.t.test(n = n(psi)/2, delta = theta(psi), sig.level = 0.05)$power)
 }
-pp(psi, name = "theta")
+
+## evaluating the power-function for all combinations of n and theta
 calc <- powCalc(psi, statistic = powFun)
-ex <- powEx(theta = 1)
-pow <- merge(calc, ex)
-plot(pow, example = FALSE)
-inspect(pow)
-tex(pow, "nEval")  # How many subjects should be available for analysis
 
-psi2 <- powPar(n = seq(from = 20, to = 60, by = 2),
-              theta = seq(from = 0.5, to = 1.5, by = 0.05),
-              xi = c(0.5, 1, 1.5)
-              )
+## adding example at theta of 1 and power of 0.9
+pow <- powEx(calc, theta = 1)
 
-calc2 <- powCalc(psi2, statistic = powFun)
-ex2 <- powEx(theta = 1, xi = 0.5)
-pow2 <- merge(calc2, ex2)
-plot(pow2)
-tex(pow2, "nEval")  # How many subjects should be available for analysis
-
+## drawing the power plot
+plot(pow,
+     xlab = "Difference",
+     ylab = "Total Sample Size")
 }
 \keyword{misc}
