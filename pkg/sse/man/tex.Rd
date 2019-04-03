@@ -1,13 +1,11 @@
-\name{tex-methods}
+\name{tex}
 \docType{methods}
-\alias{tex-methods}
-\alias{tex,power,character-method}
 \alias{tex}
 \title{Methods for Function tex}
 \description{
   Methods for function \code{tex}
 }
-\usage{\S4method{tex}{power,character}(x, type, ...)}
+\usage{tex(x, type, ...)}
 \arguments{
   \item{x}{The object of class \code{power} used for extraction}
   \item{type}{Currently available:
@@ -23,9 +21,8 @@
   \item{...}{Not used so far}
   }
 \section{Methods}{
-\describe{
-
-\item{}{describe this method here}
-}}
+\describe{This methods prepare strings that can directly be used for
+  including information from objects of \linkS4class{power} into Sweave reports.
+  }}
 \keyword{methods}
 

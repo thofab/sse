@@ -2,49 +2,59 @@
 \Rdversion{1.1}
 \docType{class}
 \alias{powCalc-class}
-\alias{merge,powCalc,powEx-method}
+\alias{powFun-class}
+\alias{dim,powCalc-method}
+\alias{update,powCalc-method}
+\alias{powEx,powCalc-method}
 
 \title{Class "powCalc" }
 \description{A class for storing information of the power
   calculation. It inherits from "powPar", that contains the information
-  for the calculation.}
+  for the calculation and from from "powEx", that contains information
+  about the power-function.}
 \section{Objects from the Class}{
-Objects can be created by calling the creator \code{"powCalc"}
+Objects can be created by calling the creator \code{\link{powCalc}}.
 }
 \section{Slots}{
   \describe{
     \item{\code{core}:}{Object of class \code{"array"} with 4
-      dimentions, n, theta, xi and endpoint }
+      dimentions, n, theta, xi and endpoint.}
+    \item{\code{core}:}{Object of class \code{"array"} with 4
+      dimentions, n, theta, xi and endpoint.}
     \item{\code{statistic}:}{Object of class \code{"function"}, this
-      function was used for calculating the power }
+      function was used for calculating the power.}
     \item{\code{endpoint.name}:}{Object of class \code{"character"}
       names of the endpoints}
-    \item{\code{n.iter}:}{Object of class \code{"integer"} how many
+    \item{\code{iter}:}{Object of class \code{"integer"} how many
       iterations were used to estimate the power}
-    \item{\code{list}:}{Object of class \code{"list"} from class \code{"powPar"} }
-    \item{\code{theta}:}{Object of class \code{"numeric"}  from class \code{"powPar"} }
-    \item{\code{theta.name}:}{Object of class \code{"character"}  from class \code{"powPar"} }
-    \item{\code{theta.act}:}{Object of class \code{"numeric"}  from class \code{"powPar"} }
-    \item{\code{xi}:}{Object of class \code{"numeric"}  from class \code{"powPar"} }
-    \item{\code{xi.name}:}{Object of class \code{"character"}  from class \code{"powPar"} }
-    \item{\code{xi.act}:}{Object of class \code{"numeric"}  from class \code{"powPar"} }
-    \item{\code{n}:}{Object of class \code{"integer"} from class \code{"powPar"} }
-    \item{\code{n.act}:}{Object of class \code{"integer"}  from class \code{"powPar"} }
   }
 }
+\section{Slots inherited from powFun}{
+  \describe{
+    \item{\code{statistic}:}{Object of class \code{"function"}}
+    \item{\code{return.power}:}{Object of class \code{"logical"}}
+    \item{\code{return.list}:}{Object of class \code{"logical"}}
+    \item{\code{return.n}:}{Object of class \code{"integer"}}
+    \item{\code{return.names}:}{Object of class \code{"character"}}
+  }
+}
+\section{Slots inherited from powPar}{
+  \code{"\linkS4class{powPar}"}
+}
 \section{Extends}{
-Class \code{"\linkS4class{Resample}"}, directly.
+Class \code{"\linkS4class{powFun}"}, directly.
 Class \code{"\linkS4class{powPar}"}, directly.
 }
-\section{Methods}{
-  \describe{
-    \item{merge}{\code{signature(x = "powCalc", y = "powEx")}: ... }
-	 }
+\usage{
+\S4method{powEx}{powCalc}(x, theta, xi = NA, endpoint = NA, power = 0.9, drop = 0,
+                   method = c("default", "lm", "step"), lm.range = NA,
+                   forceDivisor = FALSE)
+\S4method{update}{powCalc}(object, ...)
+\S4method{dim}{powCalc}(x)
 }
-\references{ none }
-\author{ \email{thomas.fabbro@unibas.ch} }
 \note{ none }
 \examples{
 showClass("powCalc")
 }
+\keyword{internal}
 \keyword{classes}

@@ -1,18 +1,22 @@
 \name{powEx}
 \alias{powEx}
-\docType{data}
+
 \title{
-  Constructing an object of class powEx.
+  Defining the example to be used and the method to be used for sample
+  size estimation.
 }
 \description{
-A function for constructing an object of class \code{powEx} used for
-drawing an example in a sensitivity plot and for evaluating sample size.
+  A function for constructing an object of class \code{power} used for
+  drawing an example in a sensitivity plot and for evaluating sample size.
 }
-\usage{powEx(theta, xi = NA, endpoint = NA, power = 0.9, drop = 0,
-method = c("default", "lm", "step"), lm.range = 0.2, forceDivisor = FALSE)}
+\usage{powEx(x, theta, xi = NA, endpoint = NA, power = 0.9, drop = 0,
+method = c("default", "lm", "step"), lm.range = NA, forceDivisor = FALSE)
+}
+
 \arguments{
+  \item{x}{An object of class \code{powCalc}.}
   \item{theta}{a numeric value indicating for which \code{theta} to draw the
-    example in the sensitivity plot and evaluate sample size. It makes
+    example in the sensitivity plot and where to evaluate sample size. It makes
     only sense to use a \code{theta} in the range evaluated.}
   \item{xi}{a numeric value, as \code{theta} but for \code{xi}}
   \item{endpoint}{Object of class \code{character}, indidating for which
@@ -22,12 +26,7 @@ method = c("default", "lm", "step"), lm.range = 0.2, forceDivisor = FALSE)}
   \item{method}{Defining the method how the sample size for the
     indicated theta, xi, and power is "estimated". If the power object
     was created using resampling the "default" evaluates to "lm",
-    otherwise to "step". For method "lm" a linear model is fit as lm(sample.size ~
-  fisher-transform(power)) with all data where theta, and xi are equal
-  to the theta and xi of the example and within the power-range as
-  defined by the argument \code{lm.range}. This model is then used for
-  predicting the sample size. The method "step" returns the last element
-  in the sequence of sample sizes - power pairs, sorted with decreasing power, where the power is above the power defined for the example.}
+    otherwise to "step".}
   \item{lm.range}{The range of evaluations that are used for estimating
     the sample size if the \code{method} is set or evaluates to
     "lm". For the default \code{lm.range} = 0.2 this means from80 to
@@ -43,18 +42,51 @@ method = c("default", "lm", "step"), lm.range = 0.2, forceDivisor = FALSE)}
     size is increased to be divisible by this divisor. If an integer is
     provided it is used as divisor.}
 }
-\details{
-An object of class \code{powPar} is used to evaluate the power for a range of
-\code{n} and \code{theta} and optionally for several \code{xi} and
-several \code{endpoints}. To be able to calculate the sample
-size for one particular situation (corresponding to a particular
-\code{theta}, \code{xi}, and \code{endpoint} and object of class
-\code{powEx} is needed and such an object can be constructed using the
-function \code{powEx}.
+\details{For method equal to "lm" a linear model is fit as lm(sample.size ~
+  transformed(power)) with all data where theta, and xi are equal
+  to the theta and xi of the example and within the power-range as
+  defined by the argument \code{lm.range}. This model is then used for
+  predicting the sample size. Always inspect the result using \code{inspect}!
 
-The method for choosing a particular sample size 
+  The method "step" returns the last element in the sequence of sample
+  sizes - power pairs, sorted with decreasing power, where the power is
+  above the power defined for the example.
 }
+\value{An object of class \code{power}.}
+\seealso{In older verstions of the package: The function
+  \code{\link{merge}} was used together with an object
+  of class \code{powEx} to form an object of class \code{power}}
 \examples{
-ex <- powEx(theta = 1, drop = 0.1)
+## defining the range of n and theta to be evaluated
+psi <- powPar(theta = seq(from = 0.5, to = 1.5, by = 0.1),
+              n = seq(from = 20, to = 60, by = 2),
+              muA = 0,
+              muB = 1)
+
+## defining a power-function     
+powFun <- function(psi){
+  power.t.test(n = n(psi)/2,
+               delta = pp(psi, "muA") - pp(psi, "muB"),
+               sd = theta(psi)
+               )$power
 }
-\keyword{misc}
+
+## evaluating the power-function for all combinations of n and theta
+calc <- powCalc(psi, powFun)
+
+## adding example at theta of 1 and power of 0.9
+pow <- powEx(calc, theta = 1, power = 0.9)
+
+## drawing the power plot with 3 contour lines
+plot(pow,
+     xlab = "Standard Deviation",
+     ylab = "Total Sample Size",
+     at = c(0.85, 0.9, 0.95))
+
+## changing the estimation method
+pow2 <- powEx(calc, theta = 1, power = 0.9, method = "lm")
+
+## drawing an inspection plot
+inspect(pow2)
+}
+\keyword{methods}
