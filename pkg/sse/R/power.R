@@ -848,7 +848,7 @@ setMethod("workhorse",
                 cl <- makeCluster(detectCores())
                 clusterEvalQ(cl, library(parallel))
                 clusterEvalQ(cl, library(sse))
-                clusterEvalQ(cl, library(someR))
+#                clusterEvalQ(cl, library(someR))
                 with.cluster <- TRUE
               }
             }
