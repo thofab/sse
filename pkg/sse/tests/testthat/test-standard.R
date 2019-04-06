@@ -21,7 +21,7 @@ powFun.resample <- function(psi)
 
 ##
 calc.power <- powCalc(psi, statistic = powFun.power)
-calc.resample <- powCalc(psi, statistic = powFun.resample, n.iter = 33, cluster = TRUE)
+calc.resample <- powCalc(psi, statistic = powFun.resample, n.iter = 33)
 
 #
 calc.resample2 <- update(calc.resample, theta = 1, n.iter = 99)
@@ -132,16 +132,16 @@ test_that("powCalc", {
   expect_error(
       powCalc(seq(from = 0, to = 100, by = 10), powFun1)
   )
-  ## default is using cluster
-  expect_message(
-      calc.resample <- powCalc(psi, statistic = powFun.resample, n.iter = 3, cluster = TRUE)
-     , "using cluster"
-  )
-  ## if cluster = FALSE
-  expect_message(
-      calc.resample <- powCalc(psi, statistic = powFun.resample, n.iter = 3, cluster = FALSE)
-      , "not using cluster"
-  )
+  ## ## default is using cluster
+  ## expect_message(
+  ##     calc.resample <- powCalc(psi, statistic = powFun.resample, n.iter = 3, cluster = TRUE)
+  ##    , "using cluster"
+  ## )
+  ## ## if cluster = FALSE
+  ## expect_message(
+  ##     calc.resample <- powCalc(psi, statistic = powFun.resample, n.iter = 3, cluster = FALSE)
+  ##     , "not using cluster"
+  ## )
 })
 
 

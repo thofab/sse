@@ -1,7 +1,7 @@
 
 setGeneric(# calculates the array with the power, stores it into powCalc
     name = "powCalc",
-    def = function(object, statistic, n.iter = NA, cluster = 8){
+    def = function(object, statistic, n.iter = NA, cluster = FALSE){
       standardGeneric("powCalc")
     })
 
