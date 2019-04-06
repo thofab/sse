@@ -549,7 +549,7 @@ setMethod("update",
 
 setMethod("powCalc",
           signature(object="powPar"),
-          definition = function(object, statistic, n.iter = NA, cluster = 8){
+          definition = function(object, statistic, n.iter = NA, cluster = FALSE){
 
             
             ## -----

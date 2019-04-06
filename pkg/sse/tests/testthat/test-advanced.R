@@ -1,5 +1,7 @@
 context("Advanced applications")
 
+library(sse)
+library(testthat)
 ### ------------------------------------------------------------------
 ### with pilot data and several endpoints
 pilot.data <- rnorm(1000)

@@ -9,7 +9,7 @@ Power calculation
   evaluated for the whole range of \code{n}, \code{theta}, and \code{xi}
   as specified in the \code{powPar}-object.
 }
-\usage{powCalc(object, statistic, n.iter = NA, cluster = 8)}
+\usage{powCalc(object, statistic, n.iter = NA, cluster = FALSE)}
 \arguments{
   \item{object}{An object of class \code{powPar}.}
   \item{statistic}{A function that takes an object of class
@@ -17,10 +17,10 @@ Power calculation
     argument. The function should return a vector of numeric values or a
     vector of logicals, depending on the \code{type}. See Details.}
   \item{n.iter}{A number specifying how often the power-function is evaluated.}
-  \item{cluster}{This argument can be logical, indicating if the
-    library parallel should be used or not or numeric. In the latter
+  \item{cluster}{Still experimental! This argument can be logical, indicating if the
+    library parallel should be used or not, or numeric. In the latter
     case the number is passed as integer to the function makeCluster
-    from library parallel. The default is 8.}
+    from library parallel. The default is FALSE.}
   \item{...}{Not used so far.}
 }
 \details{If the statistic does not return the power (a numeric value
