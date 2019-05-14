@@ -1,7 +1,7 @@
 Package: sse
 Type: Package
 Title: Sample Size Estimation
-Version: 0.7-7
+Version: 0.7-8
 Date: 2019-04-02
 Author: Thomas Fabbro
 Maintainer: Thomas Fabbro <thomas.fabbro@unibas.ch>
@@ -9,5 +9,5 @@ Description: Provides functions to evaluate user-defined power functions for a p
 License: GPL-3
 LazyLoad: yes
 Depends: R (>= 2.5.0), methods, grid, lattice, graphics, base, stats, parallel
-Suggests: testthat
+Suggests: testthat,lintr
 NeedsCompilation: no

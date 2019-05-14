@@ -846,9 +846,10 @@ setMethod("workhorse",
             if ( sum(n) > 1 ){
               if ( is.numeric(object@cluster[[1]]) || (is.logical(object@cluster[[1]]) && object@cluster[[1]])) {
                 cl <- makeCluster(detectCores())
-                clusterEvalQ(cl, library(parallel))
-                clusterEvalQ(cl, library(sse))
-#                clusterEvalQ(cl, library(someR))
+                clusterEvalQ(cl, {
+                  library(parallel)
+                  library(sse)
+                })
                 with.cluster <- TRUE
               }
             }
