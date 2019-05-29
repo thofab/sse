@@ -1,75 +1,85 @@
+## calculates the array with the power, stores it into powCalc
+setGeneric(name = "powCalc",
+           def = function(object, statistic, n.iter = NA, cluster = FALSE){
+             standardGeneric("powCalc")
+           })
 
-setGeneric(# calculates the array with the power, stores it into powCalc
-    name = "powCalc",
-    def = function(object, statistic, n.iter = NA, cluster = FALSE){
-      standardGeneric("powCalc")
-    })
-
-setGeneric(# for generating the example object in one step (replacing powEx and merge that are kept for back compatibility (and internal usage))
-    name = "powEx",
-    def = function(x, theta, xi = NA, endpoint = NA, power = 0.9, drop = 0,
-                   method = c("default", "lm", "step"), lm.range = NA,
-                   forceDivisor = FALSE){
-      standardGeneric("powEx")
-    })
-
+## for generating the example object in one step (replacing powEx and
+## merge that are kept for back compatibility (and internal usage))
+setGeneric(name = "powEx",
+           def = function(x, theta,
+                          xi = NA,
+                          endpoint = NA,
+                          power = 0.9,
+                          drop = 0,
+                          method = c("default", "lm", "step"),
+                          lm.range = NA,
+                          forceDivisor = FALSE){
+             standardGeneric("powEx")
+           })
 
 setGeneric(name = "powFunGen",
-           def = function(object, ...){standardGeneric("powFunGen")}
-           )
+           def = function(object, ...){
+             standardGeneric("powFunGen")
+           })
 
 setGeneric(
            name = "workhorse",
-           def = function(object, ...){standardGeneric("workhorse")}
+           def = function(object, ...){
+             standardGeneric("workhorse")
+           })
+
+## for programming on powPar parameters
+setGeneric(name = "pp",
+           def = function(x, name){
+             standardGeneric("pp")
+           })
+
+## for programming on powPar parameters
+setGeneric(name = "n",
+           def = function(x){
+             standardGeneric("n")
+           }
+           #,
+           # useAsDefault = function(object = pow, ...){object@n.act}
            )
 
-  
-setGeneric(# for programming on powPar parameters
-           name = "pp",
-           def = function(x, name){standardGeneric("pp")}
-           )
+setGeneric(name = "refine",
+           def = function(object, n.iter = 10){
+             standardGeneric("refine")
+           })
 
-setGeneric(# for programming on powPar parameters
-           name = "n",
-           def = function(x){standardGeneric("n")}#,
-#           useAsDefault = function(object = pow, ...){object@n.act}
-           )
+## for programming on powPar parameters
+setGeneric(name = "theta",
+           def = function(x){
+             standardGeneric("theta")
+           })
 
-setGeneric(
-           name = "refine",
-           def = function(object, n.iter = 10){standardGeneric("refine")}
-           )
+## for programming on powPar parameters
+setGeneric(name = "xi",
+           def = function(x){
+             standardGeneric("xi")
+           })
 
-setGeneric(# for programming on powPar parameters
-           name = "theta",
-           def = function(x){standardGeneric("theta")}
-           )
+## estimats n from objects of class "power"
+setGeneric(name = "sampleSize",
+           def = function(x, ...) {
+             standardGeneric("sampleSize")
+           })
+## estimats n from power
+setGeneric(name = "exDat",
+           def = function(x, y, ...) {
+             standardGeneric("exDat")
+           })
 
-setGeneric(# for programming on powPar parameters
-    name = "xi",
-    def = function(x){
-      standardGeneric("xi")
-    })
+## estimats n from power
+setGeneric(name = "inspect",
+           def = function(object) {
+             standardGeneric("inspect")
+           })
 
-setGeneric(# estimats n from objects of class "power"
-    name = "sampleSize",
-    def = function(x, ...) {
-      standardGeneric("sampleSize")
-    })
-
-setGeneric(# estimats n from power
-    name = "exDat",
-    def = function(x, y, ...) {
-      standardGeneric("exDat")
-    })
-
-setGeneric(# estimats n from power
-    name = "inspect",
-    def = function(object) {
-      standardGeneric("inspect")
-    })
-
-setGeneric(# for reporting the sampling schema
-    name = "tex",
-    def = function(x, type, ...){standardGeneric("tex")}
-)
+## for reporting the sampling schema
+setGeneric(name = "tex",
+           def = function(x, type, ...){
+             standardGeneric("tex")
+           })

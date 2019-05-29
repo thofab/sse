@@ -2,35 +2,41 @@ context("Update, resampling")
 
 library(sse)
 library(testthat)
-psi1 <- powPar(theta = seq(from = 0, to = 1, by = 0.1), 
+psi1 <- powPar(theta = seq(from = 0, to = 1, by = 0.1),
                n = seq(from = 0, to = 100, by = 10))
 ##
-powFun2 <- function(psi)
-{
-  n = n(psi)
-  theta = theta(psi)
-  return(as.logical((n * theta) %% 2))
+powFun2 <- function(psi) {
+  n  <-  n(psi)
+  theta  <-  theta(psi)
+  return(as.logical( (n * theta) %% 2))
 }
-powFun3 <- function(psi)
-{
-  n = n(psi)
-  theta = theta(psi)
+powFun3 <- function(psi) {
+  n  <-  n(psi)
+  theta  <-  theta(psi)
   return(as.logical(n %% 2))
 }
 
 ## correct result for
 
-result1.2.x <- array(round(seq(from = 0, to = 1, by = 0.1) %*% t(seq(from = 0, to = 100, by = 10)) %% 2, 10), dim = c(11,11,1,1))
-result1.2.n2 <- array(as.logical(seq(from = 0, to = 1, by = 0.1) %*% t(seq(from = 50, to = 100, by = 5)) %% 2), dim = c(11,11,1,1))
-#result1.2.n5 <- array(as.logical(seq(from = 0, to = 1, by = 0.1) %*% t(seq(from = 50, to = 150, by = 5)) %% 2), dim = c(21,11,1,1)) FIXME
-result1.3.x <- array(0, dim = c(11,11,1,1))
+result1.2.x <- array(round(seq(from = 0, to = 1, by = 0.1) %*%
+                           t(seq(from = 0, to = 100, by = 10)) %% 2, 10),
+                     dim = c(11, 11, 1, 1))
+result1.2.n2 <- array(as.logical(seq(from = 0, to = 1, by = 0.1) %*%
+                                 t(seq(from = 50, to = 100, by = 5)) %% 2),
+                      dim = c(11, 11, 1, 1))
+## result1.2.n5 <- array(as.logical(seq(from = 0, to = 1, by = 0.1) %*%
+##                                  t(seq(from = 50, to = 150, by = 5)) %% 2),
+##                       dim = c(21, 11, 1, 1))
+##                                         # FIXME
+result1.3.x <- array(0, dim = c(11, 11, 1, 1))
 
 ##
 calc1.2.1 <- powCalc(psi1, statistic = powFun2, n.iter = 99)
 
 calc1.3.1 <- powCalc(psi1, statistic = powFun3, n.iter = 99)
-calc1.2.1.nc <- powCalc(psi1, statistic = powFun2, n.iter = 99, cluster = FALSE) # as calc1.2.1 but without cluster
 
+calc1.2.1.nc <- powCalc(psi1, statistic = powFun2, n.iter = 99, cluster = FALSE)
+                                        # as calc1.2.1 but without cluster
 ##
 n.new <- as.integer(seq(from = 0, to = 100, by = 5))
 n.new2 <- as.integer(seq(from = 50, to = 100, by = 5))
@@ -101,13 +107,15 @@ test_that("update statistic and increasing n within existing range of n", {
 test_that("updating n within smaller range of n", {
 #
   calc1.2.8 <- update(calc1.2.1, n = n.new2)
- # expect_equal(array(as.logical(calc1.2.8@core), dim = c(11,11,1,1)), result1.2.n2, check.attributes = FALSE)
+ # expect_equal(array(as.logical(calc1.2.8@core), dim = c(11,11,1,1)),
+ # result1.2.n2, check.attributes = FALSE)
 })
 
 test_that("updating n with new range of n only partially matching", {
 #
   calc1.2.8 <- update(calc1.2.1, n = n.new5)
- # expect_equal(array(as.logical(calc1.2.8@core), dim = c(11,11,1,1)), result1.2.n2, check.attributes = FALSE)
+ # expect_equal(array(as.logical(calc1.2.8@core), dim = c(11,11,1,1)),
+ # result1.2.n2, check.attributes = FALSE)
 })
 
 test_that("not using cluster", {
@@ -126,5 +134,6 @@ test_that("new theta of length 1 and increasing n.iter", {
 test_that("updating n with new range of n only partially matching", {
 #
   calc1.2.11 <- update(calc1.2.1, n = n.new5)
-  #expect_equal(array(as.logical(calc1.2.11@core), dim = c(21,11,1,1)), result1.2.n5, check.attributes = FALSE)
+  #expect_equal(array(as.logical(calc1.2.11@core), dim = c(21,11,1,1)),
+  # result1.2.n5, check.attributes = FALSE)
 })
