@@ -12,8 +12,8 @@ psi <- powPar(F.hat = pilot.data,
               theta.name = "delta")
 
 powFun <- function(psi){
-   a <- sample(pp(psi, "F.hat"), size = n(psi)/2, replace = TRUE)
-   b <- sample(pp(psi, "F.hat"), size = n(psi)/2, replace = TRUE) + theta(psi)
+   a <- sample(pp(psi, "F.hat"), size = n(psi) / 2, replace = TRUE)
+   b <- sample(pp(psi, "F.hat"), size = n(psi) / 2, replace = TRUE) + theta(psi)
    w <- wilcox.test(a, b)$p.value < 0.05
    t <- t.test(a, b)$p.value < 0.05
    return(c(w = w, t = t))
@@ -34,9 +34,42 @@ plot(pow.t, smooth = 0.5,
      xlab = expression(paste("Delta, ", delta)),
      ylab = "Total sample size",
      main = "T- Test",
-     ylim = c(30,40))
+     ylim = c(30, 40))
 
-### --------------------------------- tests
+## parametric resampling:
+psi.parametric <- powPar(delta = seq(from = 0.5, to = 1.5, by = 0.05),
+                         xi = seq(from = 0.5, to = 1.5, by = 0.5),
+                         n = seq(from = 20, to = 50, by = 2),
+                         theta.name = "delta")
+
+
+powFun.parametric <- function(psi){
+  a <- rnorm(n(psi), mean = 0, sd = xi(psi))
+  b <- rnorm(n(psi), mean = theta(psi), sd = xi(psi))
+  w <- wilcox.test(a, b)$p.value < 0.05
+  t <- t.test(a, b)$p.value < 0.05
+   return(c(w = w, t = t))
+}
+
+calc.parametric <- powCalc(psi.parametric,
+                           statistic = powFun.parametric,
+                           n.iter = 99)
+
+pow.t.parametric <- powEx(calc.parametric,
+                          xi = 1,
+                          theta = 1,
+                          drop = 0.1,
+                          endpoint = "t")
+
+pow.t.parametric.xi05 <- powEx(calc.parametric,
+                               xi = 0.5,
+                               theta = 1,
+                               drop = 0.1,
+                               endpoint = "t")
+
+plot(pow.t.parametric)
+
+### --------------------------------- TESTS
 test_that("endpoints", {
 #
   ## selecting an endpoint that does not exist
@@ -50,4 +83,17 @@ test_that("powPar with data", {
 #
   ## data extracted from psi is like the original
   expect_equal(pp(psi, "F.hat"), pilot.data)
+})
+
+
+test_that("powEx", {
+  ## choosing and endpoint for example that is not part of the calc-object
+  expect_error(powEx(calc.power, theta = 2, endpoint = "s"))  ## READ MESSAGE
+})
+
+test_that("plot", {
+  ## power is constant at 1
+  expect_error(
+      plot(pow.t.parametric.xi05)
+  )
 })

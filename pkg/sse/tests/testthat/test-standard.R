@@ -6,16 +6,14 @@ library(sse)
 psi <- powPar(theta = seq(from = 0.5, to = 1.5, by = 0.05),
               n = seq(from = 20, to = 60, by = 2))
 ##
-powFun.power <- function(psi)
-{
-  return(power.t.test(n = n(psi)/2, 
+powFun.power <- function(psi){
+  return(power.t.test(n = n(psi) / 2,
                       delta = theta(psi),
                       sig.level = 0.05)$power)
 }
-powFun.resample <- function(psi)
-{
-  x <- rnorm(n(psi)/2)
-  y <- rnorm(n(psi)/2) + theta(psi)
+powFun.resample <- function(psi){
+  x <- rnorm(n(psi) / 2)
+  y <- rnorm(n(psi) / 2) + theta(psi)
   return(wilcox.test(x = x, y = y)$p.value < 0.05)
 }
 
@@ -117,12 +115,22 @@ test_that("powPar", {
       powPar(n = seq(from = 20, to = 60, by = 2))  ## READ ERROR MESSAGE
   )
   expect_error( # an n that can not be coerced to an integer
-      powPar(n  = calc.power, theta = seq(from = 0.5, to = 1.5, by = 0.05))  ## READ ERROR MESSAGE
+      powPar(n  = calc.power, theta = seq(from = 0.5, to = 1.5, by = 0.05))
+      ## READ ERROR MESSAGE
   )
   ## n as integer is dangerous but allowed
   ## expect_error(
-  ##     powPar(n = c(TRUE, FALSE), theta = seq(from = 0.5, to = 1.5, by = 0.05))
+  ##    powPar(n = c(TRUE, FALSE), theta = seq(from = 0.5, to = 1.5, by = 0.05))
   ## )
+  expect_error(
+      powPar(used.as.theta = seq(from = 0.5, to = 1.5, by = 0.05),
+              n = seq(from = 20, to = 60, by = 2))
+  )
+    expect_error(
+        powPar(used.as.theta = seq(from = 0.5, to = 1.5, by = 0.05),
+               n = seq(from = 20, to = 60, by = 2),
+               theta.name = "as.theta")
+    )
 })
 
 
@@ -134,12 +142,14 @@ test_that("powCalc", {
   )
   ## ## default is using cluster
   ## expect_message(
-  ##     calc.resample <- powCalc(psi, statistic = powFun.resample, n.iter = 3, cluster = TRUE)
+  ##     calc.resample <- powCalc(psi,
+  ##               statistic = powFun.resample, n.iter = 3, cluster = TRUE)
   ##    , "using cluster"
   ## )
   ## ## if cluster = FALSE
   ## expect_message(
-  ##     calc.resample <- powCalc(psi, statistic = powFun.resample, n.iter = 3, cluster = FALSE)
+  ##     calc.resample <- powCalc(psi,
+  ##              statistic = powFun.resample, n.iter = 3, cluster = FALSE)
   ##     , "not using cluster"
   ## )
 })
@@ -152,27 +162,43 @@ test_that("powEx", {
   expect_error(
       powEx(calc.power, theta = 1, method = "linear")  ## READ ERROR MESSAGE
   )
-  
+
   ## theta is not in the range used
   expect_error(
       powEx(calc.power, theta = 2)  ## READ ERROR MESSAGE
   )
+  ## 
+  expect_error(
+      powEx(calc.power, theta = 2, forceDivisor = -2)  ## READ ERROR MESSAGE
+  )
+  expect_error(
+      powEx(calc.power, theta = 2, endpoint = "ep2")  ## READ ERROR MESSAGE
+  )
+  ## calc object does not use xi but example for xi provided
+  expect_warning(
+      powEx(calc.power, theta = 1, xi = 7)  ## READ WARNING MESSAGE
+  )
 })
+
 
 test_that("refine", {
 
-  ## only if 
+  ## only if
   expect_error(
       refine(pow.power),
-      "Additional iterations for the chosen example are only meaningful if the object was created using resampling."
+      strwrap(
+          "Additional iterations for the chosen example are only
+            meaningful if the object was created using resampling.",
+          prefix = " ", initial = ""))
+  expect_error(
+      refine(calc.resample, n.iter = 0.5)  ## READ WARNING MESSAGE
   )
-  
 })
 
 
 test_that("plot", {
 
-  ## 
+  ##
   expect_warning(
       plot(pow.power, ylim = c(30, 40))  ## READ WARNING MESSAGE
   )
@@ -186,14 +212,12 @@ prep.tex <- function(string){
 
 test_that("tex methods", {
   expect_match(prep.tex(tex(pow.power, "drop")), "0~%")
-#  expect_match(prep.tex(tex(pow.power, "sampling")), "$n_{i=1,...,21} = 20, ..., 60$") FIXME
+#  expect_match(prep.tex(tex(pow.power, "sampling")),
+#    "$n_{i=1,...,21} = 20, ..., 60$") FIXME
   expect_equal(tex(pow.power, "nRec"), 46)
-  expect_equal(tex(pow.power, "nEval"), 46) 
+  expect_equal(tex(pow.power, "nEval"), 46)
   expect_equal(tex(pow.power, "theta"), 1)
   expect_equal(tex(pow.power, "xi"), as.numeric(NA))
   expect_equal(tex(pow.power, "power"), 0.9)
   expect_equal(tex(pow.power, "n.iter"), as.numeric(NA))
 })
-
-
-

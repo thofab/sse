@@ -1,6 +1,6 @@
+library(lintr)
 library(testthat)
 library(sse)
-
 
 test_check("sse")
 

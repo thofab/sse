@@ -3,28 +3,41 @@ context("Update pow-object, statistic returns a power")
 
 library(sse)
 library(testthat)
-psi1 <- powPar(theta = seq(from = 0, to = 1, by = 0.1), 
+psi1 <- powPar(theta = seq(from = 0, to = 1, by = 0.1),
                n = seq(from = 0, to = 100, by = 10))
 ##
-powFun1 <- function(psi)
-{
-  n = n(psi)
-  theta = theta(psi)
-  return((n * theta)/100)
-  }
+powFun1 <- function(psi) {
+  n <- n(psi)
+  theta <- theta(psi)
+  return( (n * theta) / 100)
+}
 
 ## correct result for
-result1.1.x <- array(seq(from = 0, to = 100, by = 10) %*% t(seq(from = 0, to = 1, by = 0.1)) /100, dim = c(11, 11, 1,1))
+result1.1.x <- array(seq(from = 0, to = 100, by = 10) %*%
+                     t(seq(from = 0, to = 1, by = 0.1)) / 100,
+                     dim = c(11, 11, 1, 1))
 ## n
-result1.1.n <- array(seq(from = 0, to = 100, by = 5) %*% t(seq(from = 0, to = 1, by = 0.1)) /100, dim = c(21, 11, 1,1))
-result1.1.n2 <- array(seq(from = 50, to = 100, by = 5) %*% t(seq(from = 0, to = 1, by = 0.1)) /100, dim = c(11, 11, 1,1))
-result1.1.n3 <- array(seq(from = 110, to = 150, by = 10) %*% t(seq(from = 0, to = 1, by = 0.1)) /100, dim = c(5, 11, 1,1))
-result1.1.n4 <- array(55 %*% t(seq(from = 0, to = 1, by = 0.1)) /100, dim = c(1, 11, 1,1))
+result1.1.n <- array(seq(from = 0, to = 100, by = 5) %*%
+                     t(seq(from = 0, to = 1, by = 0.1)) / 100,
+                     dim = c(21, 11, 1, 1))
+result1.1.n2 <- array(seq(from = 50, to = 100, by = 5) %*%
+                      t(seq(from = 0, to = 1, by = 0.1)) / 100,
+                      dim = c(11, 11, 1, 1))
+result1.1.n3 <- array(seq(from = 110, to = 150, by = 10) %*%
+                      t(seq(from = 0, to = 1, by = 0.1)) / 100,
+                      dim = c(5, 11, 1, 1))
+result1.1.n4 <- array(55 %*% t(seq(from = 0, to = 1, by = 0.1)) / 100,
+                      dim = c(1, 11, 1, 1))
 ## theta 
-result1.1.t <- array(seq(from = 0, to = 100, by = 10) %*% t(seq(from = 0, to = 1, by = 0.05)) /100, dim = c(11, 21, 1,1))
-result1.1.t4 <- array(seq(from = 0, to = 100, by = 10) %*% t(0.51) /100, dim = c(11, 1, 1,1))
+result1.1.t <- array(seq(from = 0, to = 100, by = 10) %*%
+                     t(seq(from = 0, to = 1, by = 0.05)) / 100,
+                     dim = c(11, 21, 1, 1))
+result1.1.t4 <- array(seq(from = 0, to = 100, by = 10) %*% t(0.51) / 100,
+                      dim = c(11, 1, 1, 1))
 ## thata and n
-result1.1.nt <- array(seq(from = 0, to = 100, by = 5) %*% t(seq(from = 0, to = 1, by = 0.05)) /100, dim = c(21, 21, 1,1))
+result1.1.nt <- array(seq(from = 0, to = 100, by = 5) %*%
+                      t(seq(from = 0, to = 1, by = 0.05)) / 100,
+                      dim = c(21, 21, 1, 1))
 
 
 ##
