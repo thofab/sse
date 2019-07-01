@@ -1,13 +1,54 @@
-context("lints")
-library(lintr)
-test_that("code quality and style", {
-#  skip_if_not_installed("lintr")
-#  skip_on_travis()
-#  skip_on_cran()
-  lintr::expect_lint_free(linters = with_defaults(
-                              line_length_linter(120)
-                          ))
-})
+## context("lintr")
+
+
+
+## # "lintr_trailing_semicolon_linter" fails in bad1
+## # "lintr_attach_detach_linter"  fails in bad2
+## # "lintr_setwd_linter"  fails in bad2
+## # "lintr_sapply_linter"  fails in bad2
+## # "lintr_library_require_linter" fails in bad2
+## # "lintr_seq_linter" fails in bad3
+## # not failing yet:
+## # "lintr_assignment_linter"
+## # "lintr_line_length_linter" 
+
+## gp_lintrs <- c("lintr_assignment_linter", "lintr_line_length_linter", 
+##                "lintr_trailing_semicolon_linter", 
+##                "lintr_attach_detach_linter", "lintr_setwd_linter", 
+##                "lintr_sapply_linter", "lintr_library_require_linter", 
+##                "lintr_seq_linter")
+
+## bad1 <- system.file("bad1", package = "goodpractice")
+## gp_bad1 <- gp(bad1, checks = gp_lintrs)
+## res_bad1 <- results(gp_bad1)
+
+## gp_bad2 <- gp("bad2", checks = gp_lintrs)
+## res_bad2 <- results(gp_bad2)
+
+## gp_bad3 <- gp("bad3", checks = gp_lintrs)
+## res_bad3 <- results(gp_bad3)
+
+## get_result <- function(res, check) res$result[res$check == check]
+
+
+
+## test_that("lintr_assignment_linter", {
+  
+##   expect_true(get_result(res_bad1, "lintr_assignment_linter"))
+##   # TODO expectation/example where the check fails
+  
+## })
+
+
+## library(lintr)
+## test_that("code quality and style", {
+## #  skip_if_not_installed("lintr")
+## #  skip_on_travis()
+## #  skip_on_cran()
+##   lintr::expect_lint_free(linters = with_defaults(
+##                               line_length_linter(120)
+##                           ))
+## })
 
 
 ## context("lints")

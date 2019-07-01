@@ -36,7 +36,7 @@ method = c("default", "lm", "step"), lm.range = NA, forceDivisor = FALSE)
     how many drop outs are expected in the study. 
     This information is used to calculate the number of subject that
     should be recruited (addressed e.g. by the function \code{tex} using
-    type \code{nRec})}.
+    type \code{nRec}).}
   \item{forceDivisor}{If \code{TRUE} the biggest common divisor of all
     evaluated sample sizes is used as divisor and the estimated sample
     size is increased to be divisible by this divisor. If an integer is

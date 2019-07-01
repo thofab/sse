@@ -221,7 +221,7 @@ To get a more accurate estimation of the sample size for the chosen example it
 is possible to increase the number of iterations by e.g. a factor of five. 
 <<refine>>=
 
-pow.resample <- refine(pow.resample, n.iter = 5)
+pow.resample <- refine(pow.resample, factor = 5)
 @ 
 
 Not like the function \textsf{update}, the function \textsf{refine} increases

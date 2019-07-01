@@ -68,15 +68,24 @@ powPar <- function(n, theta = NA, xi = NA, ...) {
   ## testing and preparing the input we get
   ## - n: should be anything that can be converted to numeric
   ##          (logical is allowed but dangerous)
+  ##      is not allowed to contain dublicates
   ## - theta: default NA is only for backward compatibility
   ##          (use of any name together with theta.name)
-
-
+  ##          is not allowed to contain dublicates
+  ## - xi: almost the same as for theta
   ## ---
   dots.eval <- list(...)
-
+  ## ---
+  ## handling of n
+  if (length(unique(round(n, 10))) != length(round(n, 10))){
+    stop(strwrap(
+        "It is not allowed to have dublicated elements in 'n'",
+        prefix = " ", initial = ""))
+  }
+  
   ## ---
   ## handling of theta
+  ## FIXME: how to handle theta.name (if provided)? Add it to plot? etc.
   if (all(is.na(theta))) {
     if (any(names(dots.eval) == "theta.name")) {
       theta.name <- dots.eval[["theta.name"]]
@@ -85,28 +94,49 @@ powPar <- function(n, theta = NA, xi = NA, ...) {
       } else {
         stop(strwrap(gettextf(
             "You said that the 'theta.name' is % s but there is no argument %s",
-            dQuote(theta.name), dQuote(theta.name))))
+            dQuote(theta.name), dQuote(theta.name)),
+                  prefix = " ", initial = ""))
       }
       dots.eval[["theta.name"]] <- NULL
     } else {
       stop(strwrap("If the argument 'theta' is NA, you should provide a vector
                    of values to be evaluated OR the argument theta.name with the
-                   name of the argument that provides the vector of values."))
+                   name of the argument that provides the vector of values.",
+                  prefix = " ", initial = ""))
     }
   } else {
     if (any(names(dots.eval) == "theta.name")) {
       theta.name <- dots.eval[["theta.name"]]
       dots.eval[["theta.name"]] <- NULL
+      warning(strwrap(
+          "I am in trouble here: You provide a 'theta', as well as a
+           'theta.name'.
+           The elemets provided to 'theta' will be used for further
+           calculations.",
+          prefix = " ", initial = ""))
     } else {
       theta.name <- as.character(NA)
     }
   }
+  if (length(unique(round(theta, 10))) != length(round(theta, 10))){
+    stop(strwrap(
+            "It is not allowed to have dublicated elements in 'theta'",
+            prefix = " ", initial = ""))
+    }
 
   ## ---
   ## handling of xi
   if (all(is.na(xi))) {
     if (any(names(dots.eval) == "xi.name")) {
-      xi <- dots.eval[[xi.name]]
+      xi.name <- dots.eval[["xi.name"]]
+      if (any(names(dots.eval) == xi.name)) {
+        xi <- dots.eval[[xi.name]]
+      } else {
+        stop(strwrap(gettextf(
+            "You said that the 'xi.name' is % s but there is no argument %s",
+            dQuote(xi.name), dQuote(xi.name)),
+            prefix = " ", initial = ""))
+      }
       dots.eval[["xi.name"]] <- NULL
     } else {
       xi.name <- as.character(NA)
@@ -116,11 +146,21 @@ powPar <- function(n, theta = NA, xi = NA, ...) {
     if (any(names(dots.eval) == "xi.name")) {
       xi.name <- dots.eval[["xi.name"]]
       dots.eval[["xi.name"]] <- NULL
+      warning(strwrap(
+          "I am in trouble here: You provide a 'xi', as well as a 'xi.name'.
+           The elemets provided to 'xi' will be used for further
+           calculations.",
+          prefix = " ", initial = ""))
     } else {
       xi.name <- as.character(NA)
     }
   }
-
+  if (length(unique(round(xi, 10))) != length(round(xi, 10))){
+    stop(strwrap(
+        "It is not allowed to have dublicated elements in 'xi'",
+        prefix = " ", initial = ""))
+  }
+  
   ## ---
   ## generate a new powPar object
   powPar <- new("powPar",
@@ -194,7 +234,8 @@ setMethod("powEx",
             if (all(is.na(x@xi)) & all(!is.na(y@xi.example))){
               warning(strwrap(
                   "powCalc-object does not make use of 'xi', but you provide
-                  an example for 'xi'. The example for 'xi' will be ignored"))
+                  an example for 'xi'. The example for 'xi' will be ignored",
+                  prefix = " ", initial = ""))
               y@xi.example <- as.numeric(NA)
             }
             ## ---
@@ -208,7 +249,23 @@ setMethod("powEx",
                   prefix = " ", initial = ""))
                 , call. = FALSE)
             }
-            
+            ## ---
+            ## if forceDivisor is TRUE we guess what a good divisor might be
+            ## this needs to be done here because we need the objects
+            ## powEx and powCalc
+            if (forceDivisor && is.na(y@divisor)){
+              divisor <- 1
+              for ( i in 2:min(x@n) ) {
+                divisor <- ifelse(all(x@n %% i == 0), i, divisor)
+              }
+              y@divisor <- as.integer(divisor)
+              message(strwrap(gettextf(
+                  "If 'forceDivisor' is set to TRUE, I guess on a good divisor
+                   to be used: If %s is not a good choice, please indicate
+                   what divisor to be used.",
+                  dQuote(y@divisor),
+                  prefix = " ", initial = "")))
+            }
             ## -----
             ## generating a new power object
             return(new("power", x, y))
@@ -257,24 +314,21 @@ setMethod("tex",
                    },
                    nEval = {
                      ceiling(sampleSize(x)@estimate)
-                   },
-                   ## not used as long as match.arg is used because mach.arg
-                   ## returns with an error if it does not match!
-                   {
-                     "undefinded sting provided for the argument type"
                    })
           })
 
 
 
-setMethod("pp", signature(x = "powPar"), function(x, name) {
-  ##
-  if (name %in% slotNames("power")) {
-    slot(x, name)
-  } else {
-    eval(x@list[[name]])
-  }
-})
+setMethod("pp",
+          signature(x = "powPar"),
+          function(x, name) {
+            ##
+            if (name %in% slotNames("power")) {
+              slot(x, name)
+            } else {
+              eval(x@list[[name]])
+            }
+          })
 
 
 
@@ -345,7 +399,7 @@ setMethod("inspect",
 
 setMethod("refine",
           signature(object = "power"),
-          definition = function(object, n.iter = 10){
+          definition = function(object, factor = 10){
 
             ## -----
             ## only useful if power object was generated with resampling
@@ -358,20 +412,25 @@ setMethod("refine",
 
             ## -----
             ## prepare n.iter
-            if (!is.numeric(n.iter) || is.na(n.iter) || n.iter <= 1) {
+            if (!is.numeric(factor) || is.na(factor) || factor <= 1) {
               stop(strwrap(
-                  "The argument 'n.iter' must be >1
+                  "The argument 'factor' must be >1
                   (is used for multiplying the number of iterations."),
                   prefix = " ", initial = "")
             }
-            n.iter <- as.integer(object@iter * n.iter)
+            n.iter <- object@iter
+            iter.example <- as.integer(n.iter * factor)
 
 
             ## -----
-            refinedObj <- workhorse(object,
-                                   theta = object@theta == object@theta.example,
-                                    n.iter = n.iter)
-            refinedObj@iter.example <- n.iter
+            refinedObj <- workhorse(
+                object,
+                theta = object@theta == object@theta.example,
+                n.iter = iter.example)
+            ## Because only the iterations of the example are increased
+            ## during refinement this needs to be handled here correctly
+            refinedObj@iter.example <- iter.example
+            refinedObj@iter <- n.iter
 
             ## -----
             return(refinedObj)
@@ -414,22 +473,22 @@ setMethod("update",
 
             dots <- list(...)
             dots.names <- names(dots)
-            ## -----
-            ## handle keep
-            keep <- FALSE
-            if (any(dots.names == "keep")) {
-              keep <- dots[["keep"]]
-              ## removing keep from dots and dots.names
-              dots <- dots[which(dots.names != "keep")]
-              dots.names <- dots.names[-which(dots.names == "keep")]
-              if (!is.logical(keep)) {
-                warning(strwrap(
-                    "The argument 'keep' should be a logical,
-                    it will be set to FALSE",
-                    prefix = " ", initial = ""))
-                keep <- FALSE
-              }
-            }
+            ## ## -----
+            ## ## handle keep
+            ## keep <- FALSE
+            ## if (any(dots.names == "keep")) {
+            ##   keep <- dots[["keep"]]
+            ##   ## removing keep from dots and dots.names
+            ##   dots <- dots[which(dots.names != "keep")]
+            ##   dots.names <- dots.names[-which(dots.names == "keep")]
+            ##   if (!is.logical(keep)) {
+            ##     warning(strwrap(
+            ##         "The argument 'keep' should be a logical,
+            ##         it will be set to FALSE",
+            ##         prefix = " ", initial = ""))
+            ##     keep <- FALSE
+            ##   }
+            ## }
 
             # notAlloud <- c("core", "size", "iter")
             
@@ -439,7 +498,8 @@ setMethod("update",
             if (any(!dots.names %in% allowedSlots)){
               stop(strwrap(gettextf(
                   "It is only allowed to update the following elements: %s .",
-                  dQuote(allowedSlots))))
+                  dQuote(paste(allowedSlots, collapse = ", "))),
+                  prefix = " ", initial = ""))
             }
 
 
@@ -451,7 +511,36 @@ setMethod("update",
             for (i in seq_along(dots.names)) {
               if (.hasSlot(newObj, dots.names[i])) {
                 if (dots.names[i] == "n") {
-                  slot(newObj, dots.names[i]) <- as.integer(dots[[i]])
+                  slot(newObj, dots.names[i]) <- as.integer(
+                      round(dots[[i]], 10))
+                  ##
+                  if (length(unique(round(as.integer(dots[[i]]), 10)))
+                      != length(round(as.integer(dots[[i]]), 10))){
+                    stop(strwrap(
+                        "It is not allowed to have dublicated elements in 'n'",
+                        prefix = " ", initial = ""))
+                  }
+                } else if (dots.names[i] == "theta"){ ## could be done generic
+                  slot(newObj, dots.names[i]) <- round(
+                      as.numeric(dots[[i]]), 10)
+                  ##
+                  if (length(unique(round(dots[[i]], 10)))
+                      != length(round(dots[[i]], 10))){
+                    stop(strwrap(
+                        "It is not allowed to have dublicated elements in
+                        'theta'",
+                        prefix = " ", initial = ""))
+                  }
+                } else if (dots.names[i] == "xi"){
+                  slot(newObj, dots.names[i]) <- round(
+                      as.numeric(dots[[i]]), 10)
+                  ##
+                  if (length(unique(round(dots[[i]], 10)))
+                      != length(round(dots[[i]], 10))){
+                    stop(strwrap(
+                        "It is not allowed to have dublicated elements in 'xi'",
+                        prefix = " ", initial = ""))
+                  }
                 } else {
                   slot(newObj, dots.names[i]) <- dots[[i]]
                 }
@@ -463,6 +552,14 @@ setMethod("update",
             ## preparing n.iter to be used by the workhorse,
             ## see there what is expected:
             if (hasArg("n.iter")) {
+              if (object@return.power) {
+                warning(strwrap(
+                    "The argument 'n.iter' is use only if the object was
+                     created using resampling.
+                     The provided value will not be used.",
+                    prefix = " ", initial = ""))  
+                n.iter <- as.integer(NA)
+              }
               n.iter <- dots[["n.iter"]]
               if (length(n.iter) > 1){
                 warning("Only the first element of 'n.iter' is used")
@@ -497,12 +594,16 @@ setMethod("update",
               ##                     n.iter = n.iter)
 ### new n, theta and/or xi
             } else if (any(c("n", "theta", "xi") %in% dots.names)) {
+              takeObj <- object # is always the actual one
+              giveObj <- object
+              increase.n <- FALSE
+              increase.theta <- FALSE
+              increase.xi <- FALSE
               ## new n
               if ("n" %in% dots.names) {
                 message("A new <n> is provided.")
                 ## we introduce s that takes now "n" (later "theta" and "xi")
                 s <- "n"
-                message("n")
                 if (identical(slot(newObj, s), slot(object, s))) {
                   warning("But it is the same -> No changes will be done.")
                 } else if (!any(slot(newObj, s) %in% slot(object, s))) {
@@ -517,48 +618,34 @@ setMethod("update",
                       "It contains some available elements ->
                        The new elements will be calculated.",
                       prefix = " ", initial = ""))
-                  any.change <- TRUE
-
-                  ## generating a object and a vector for giving (existing
-                  ## elements) and taking (existing elements)
-                  ## |                          | example | length | class   |
-                  ## | old elements (e.g. of n) | xxxxx   |      5 |         |
-                  ## | new elements             | ___xxx  |      3 |         |
-                  ## in this example the new n does not have the first tree
-                  ## elements but one additional
-                  ## | giveElements             | FFFTT   |      5 | logical |
-                  ## | takeElements             |    TTF  |      3 | logical |
-                  ## we stepwise increase and therefore do not directly work on
-                  ## the newObj
-                  ## if theta of xi are available we will "rotate", takeObj
-                  ## will then become giveObj,
-                  ## and newObj will become takeObj again etc
-                  takeObj <- newObj
-                  giveObj <- object
+                  ## --- increase n
+                  ## the increasing itself is posponed because first we
+                  ## check if other dimensions can be reduced
+                  increase.n <- TRUE
+                } else if (!new.calc
+                           & all(round(slot(newObj, s), 10)
+                                 %in% round(slot(object, s), 10))
+                           & length(slot(newObj, s) < length(
+                                                          slot(object, s)))) {
+                  message(strwrap(
+                      "It contains only available elements ->
+                       No new elements will be calculated.",
+                      prefix = " ", initial = ""))
+                  ## --- shrink n
                   takeElements <-
-                    round(slot(newObj, s), 10) %in% round(slot(giveObj, s), 10)
+                    round(slot(newObj, s), 10) %in% round(slot(object, s), 10)
                   giveElements <-
-                    round(slot(giveObj, s), 10) %in% round(slot(newObj, s), 10)
-                  ##
-                  ## generating a core (with NA) of the right dimensions for the
-                  ## new obj (new in this step only!)
+                    round(slot(object, s), 10) %in% round(slot(newObj, s), 10)
                   takeObj@core <- array(NA,
                                         dim = c(length(newObj@n),
-                                                length(giveObj@theta),
-                                                length(giveObj@xi),
+                                                length(object@theta),
+                                                length(object@xi),
                                                 newObj@return.n))
-                  ## filling in the elements that we keep from the past
+                  slot(takeObj, s) <- slot(newObj, s)
                   takeObj@core[takeElements, , , ] <-
                     giveObj@core[giveElements, , , ]
-                  ##
-                  slot(takeObj, "theta") <- round(slot(giveObj, "theta"), 10)
-                  slot(takeObj, "xi") <- round(slot(giveObj, "xi"), 10)
-                  ##
-                  takeObj <- workhorse(takeObj,
-                                       ## those elements that we could take from
-                                       ## the past do not need to be changed
-                                       ## again:
-                                       n = !takeElements)
+                  giveObj <- takeObj
+                  any.change <- TRUE
                 }
               }
               ## new theta
@@ -573,39 +660,36 @@ setMethod("update",
                                   prefix = " ", initial = ""))
                   new.calc <- TRUE
                   any.change <- TRUE
-                }else if (!new.calc
-                          & any(!(slot(newObj, s) %in% slot(object, s)))) {
+                } else if (!new.calc
+                           & any(!(round(slot(newObj, s), 10) %in% round(slot(object, s), 10)))) {
                   message(strwrap(
                       "It contains some available elements ->
                        Ony the new elements will be calculated.",
                       prefix = " ", initial = ""))
-                  any.change <- TRUE
-                  if ("n" %in% dots.names) {
-                    ## ATTENTION not the same as in "n" above
-                    giveObj <- takeObj
-                    takeObj <- newObj
-                  } else {
-                    takeObj <- newObj
-                    giveObj <- object
-                  }
-                  takeElements <-
-                    round(slot(takeObj, s), 10) %in% round(slot(giveObj, s), 10)
+                  ## --- increase theta
+                  increase.theta <- TRUE
+                } else if (!new.calc
+                           & all(round(slot(newObj, s), 10) %in% round(slot(object, s), 10))
+                           & length(slot(newObj, s) < length(slot(object, s)))) {
+                  message(strwrap(
+                      "It contains only available elements ->
+                       No new elements will be calculated.",
+                      prefix = " ", initial = ""))
+                  ## --- shrink theta
+                    takeElements <-
+                    round(slot(newObj, s), 10) %in% round(slot(object, s), 10)
                   giveElements <-
-                    round(slot(giveObj, s), 10) %in% round(slot(takeObj, s), 10)
-                  ##
+                    round(slot(object, s), 10) %in% round(slot(newObj, s), 10)
                   takeObj@core <- array(NA,
-                                        ## ATTENTION not the same as in above
                                         dim = c(length(takeObj@n),
-                                                length(takeObj@theta),
-                                                length(giveObj@xi),
+                                                length(newObj@theta),
+                                                length(object@xi),
                                                 newObj@return.n))
+                  slot(takeObj, s) <- slot(newObj, s)
                   takeObj@core[, takeElements, , ] <-
                     giveObj@core[, giveElements, , ]
-                  ##
-                  slot(takeObj, "xi") <- round(slot(giveObj, "xi"), 10)
-                  ##
-                  takeObj <- workhorse(takeObj,
-                                       theta = !takeElements)
+                  giveObj <- takeObj
+                  any.change <- TRUE
                 }
               }
               ## new xi
@@ -621,43 +705,129 @@ setMethod("update",
                       prefix = " ", initial = ""))
                   new.calc <- TRUE
                   any.change <- TRUE
-                }else if (!new.calc
-                          & any(!(slot(newObj, s) %in% slot(object, s)))) {
+                } else if (!new.calc
+                           & any(!(slot(newObj, s) %in% slot(object, s)))) {
                   message(strwrap(
                       "It contains some available elements ->
-                       Only the new elements will be calculated.",
+                       The new elements will be evaluated (later).",
                       prefix = " ", initial = ""))
-                  any.change <- TRUE
-                  ## ATTENTION not the same as in "n" and "theta" above:
-                  if (c("theta", "n") %in% dots.names) {
-                    giveObj <- takeObj
-                    takeObj <- newObj
-                  } else {
-                    takeObj <- newObj
-                    giveObj <- object
-                  }
-                  takeElements <-
-                    round(slot(takeObj, s), 10) %in% round(slot(giveObj, s), 10)
+                  increase.xi <- TRUE
+                } else if (!new.calc
+                           & all(round(slot(newObj, s), 10) %in% round(slot(object, s), 10))
+                           & length(slot(newObj, s) < length(slot(object, s)))) {
+                  message(strwrap(
+                      "It contains only available elements ->
+                       No new elements will be evaluated.",
+                      prefix = " ", initial = ""))
+                  ## --- shrink xi
+                    takeElements <-
+                    round(slot(newObj, s), 10) %in% round(slot(object, s), 10)
                   giveElements <-
-                    round(slot(giveObj, s), 10) %in% round(slot(takeObj, s), 10)
+                    round(slot(object, s), 10) %in% round(slot(newObj, s), 10)
+                  takeObj@core <- array(NA,
+                                        dim = c(length(takeObj@n),
+                                                length(takeObj@theta),
+                                                length(newObj@xi),
+                                                newObj@return.n))
+                  slot(takeObj, s) <- slot(newObj, s)
+                  takeObj@core[, , takeElements, ] <-
+                    giveObj@core[, , giveElements, ]
+                  giveObj <- takeObj
+                  any.change <- TRUE
+                }
+              }
+              if (!new.calc & increase.n) {
+                s <- "n"
+                message("New elements for 'n' are evaluated.")
+                ## generating a object and a vector for giving (existing
+                ## elements) and taking (existing elements)
+                ## |                          | example | length | class   |
+                ## | old elements (e.g. of n) | xxxxx   |      5 |         |
+                ## | new elements             | ___xxx  |      3 |         |
+                ## in this example the new n does not have the first tree
+                ## elements but one additional
+                ## | giveElements             | FFFTT   |      5 | logical |
+                ## | takeElements             |    TTF  |      3 | logical |
+                ## we stepwise increase and therefore do not directly work on
+                ## the newObj
+                ## if theta of xi are available we will "rotate", takeObj
+                ## will then become giveObj,
+                ## and newObj will become takeObj again etc
+                takeElements <-
+                  round(slot(newObj, s), 10) %in% round(slot(object, s), 10)
+                giveElements <-
+                  round(slot(object, s), 10) %in% round(slot(newObj, s), 10)
+                ##
+                ## generating a core (with NA) of the right dimensions for the
+                  ## new obj (new in this step only!)
+                  takeObj@core <- array(NA,
+                                        dim = c(length(newObj@n),
+                                                length(takeObj@theta),
+                                                length(takeObj@xi),
+                                                newObj@return.n))
+                  slot(takeObj, s) <- slot(newObj, s)
+                  ## filling in the elements that we keep from the past
+                  takeObj@core[takeElements, , , ] <-
+                    giveObj@core[giveElements, , , ]
+                  ##
+                  takeObj <- workhorse(takeObj,
+                                       ## those elements that we could take from
+                                       ## the past do not need to be changed
+                                       ## again:
+                                       n = !takeElements)
+                  giveObj <- takeObj
+                  any.change <- TRUE
+                }
+                if (!new.calc & increase.theta) {
+                  message("New elements for 'theta' are evaluated.")
+                  s <- "theta"
+                  takeElements <-
+                    round(slot(newObj, s), 10) %in% round(slot(object, s), 10)
+                  giveElements <-
+                    round(slot(object, s), 10) %in% round(slot(newObj, s), 10)
+                  ##
+                  takeObj@core <- array(NA,
+                                        ## ATTENTION not the same as in above
+                                        dim = c(length(takeObj@n),
+                                                length(newObj@theta),
+                                                length(takeObj@xi),
+                                                newObj@return.n))
+                  slot(takeObj, s) <- slot(newObj, s)
+                  takeObj@core[, takeElements, , ] <-
+                    giveObj@core[, giveElements, , ]
+                  ##
+                  takeObj <- workhorse(takeObj,
+                                       theta = !takeElements)
+                  giveObj <- takeObj
+                  any.change <- TRUE
+                }
+                if (!new.calc & increase.xi) {
+                  message("New elements for 'xi' are evaluated.")
+                  s <- "xi"
+                  takeElements <-
+                    round(slot(newObj, s), 10) %in% round(slot(object, s), 10)
+                  giveElements <-
+                    round(slot(object, s), 10) %in% round(slot(newObj, s), 10)
                   ##
                   takeObj@core <- array(NA,
                                         ## ATTENTION not the same as in "n"
                                         ## and "theta" above:
-                                        dim = c(length(newObj@n),
-                                                length(newObj@theta),
+                                        dim = c(length(takeObj@n),
+                                                length(takeObj@theta),
                                                 length(newObj@xi),
                                                 newObj@return.n))
-
+                  slot(takeObj, s) <- slot(newObj, s)
                   takeObj@core[, , takeElements, ] <-
                     giveObj@core[, , giveElements, ]
                   ##
                   takeObj <- workhorse(takeObj,
                                        xi = !takeElements)
+                  giveObj <- takeObj
+                  any.change <- TRUE
                 }
-              }
-
-
+              
+              
+              
               ## ---
               ## Now that takeObj has grown across "n", "theta", and "xi" but 
               ## ONLY if it did not step over a new.calc "request" and
@@ -801,13 +971,8 @@ setMethod("show",
               cat("Additional parameters defined:\n")
               for (i in names(object@list)) {
                 if (is.na(object@theta.name)) {
-                  cat(paste("   ", i , ": ", eval(pp(object, i)),
+                  cat(paste("   ", i ,# ": ", eval(pp(object, i)),
                             "\n", sep = ""))
-                }else{
-                  if (i != object@theta.name) {
-                    cat(paste("   ", i , ": ", eval(pp(object, i)),
-                              "\n", sep = ""))
-                  }
                 }
               }
             }
@@ -914,7 +1079,8 @@ setMethod("powFunGen",
             ##           comparison that can only be done for this classes
             ##           by testing if between 0 and 1
             if (is.logical(statistic.return)
-                | (all(statistic.return <= 1)
+                | is.double(statistic.return)
+                && (all(statistic.return <= 1)
                   & all(statistic.return >= 0))) {
               if (is.logical(statistic.return)) {
                 x@return.power <- FALSE
@@ -931,33 +1097,34 @@ setMethod("powFunGen",
 
             ## -----
             ## preparing data and populating the powFun object
-            if ( is.list(statistic.return) ){
-              warning(strwrap(
-                  "The implementation that allows the statistic to return a
-                   list is under construction!",
-                  prefix = " ", initial = "")) #FIXME
-              x@return.list <- TRUE
-              x@return.n <- length(statistic.return$power)
-              x@return.names <- names(statistic.return$power)
-              ## n.size <- length(statistic.return$size)
-              ## size.name <- names(statistic.return$size)
-              ## if (is.null(size.name)) {
-              ## size.name <- paste("n", seq(1, n.size), sep = "")}
-              ## ##
-              ## if (!is.logical(statistic.return$power)
-              ## & !powFun.info@return.power) {
-              ##   warning("The function statistic does not return a logical
-              ##            vector for the list element power. I assume it is
-              ##            the power and will ignore your n.iter.")
-              ##   n.iter <- as.integer(NA)
-              ## }
-              ## ##
-              ## if (powFun.info@return.power){
-              ##   size.array <- array(NA, dim = c(dim(object), n.size))
-              ## } else {
-              ##   size.array <- array(NA, dim = c(dim(object), n.size, n.iter))
-              ## }
-            } else {
+            ## FIXME: implementation of list as return!
+            ## if ( is.list(statistic.return) ){
+            ##   warning(strwrap(
+            ##       "The implementation that allows the statistic to return a
+            ##        list is under construction!",
+            ##       prefix = " ", initial = "")) #FIXME
+            ##   x@return.list <- TRUE
+            ##   x@return.n <- length(statistic.return$power)
+            ##   x@return.names <- names(statistic.return$power)
+            ##   ## n.size <- length(statistic.return$size)
+            ##   ## size.name <- names(statistic.return$size)
+            ##   ## if (is.null(size.name)) {
+            ##   ## size.name <- paste("n", seq(1, n.size), sep = "")}
+            ##   ## ##
+            ##   ## if (!is.logical(statistic.return$power)
+            ##   ## & !powFun.info@return.power) {
+            ##   ##   warning("The function statistic does not return a logical
+            ##   ##            vector for the list element power. I assume it is
+            ##   ##            the power and will ignore your n.iter.")
+            ##   ##   n.iter <- as.integer(NA)
+            ##   ## }
+            ##   ## ##
+            ##   ## if (powFun.info@return.power){
+            ##   ##   size.array <- array(NA, dim = c(dim(object), n.size))
+            ##   ## } else {
+            ##   ##   size.array <- array(NA, dim = c(dim(object), n.size, n.iter))
+            ##   ## }
+ ##           } else {
               x@return.list <- FALSE
               x@return.n <- length(statistic.return)
               if (is.null(names(statistic.return))) {
@@ -966,7 +1133,7 @@ setMethod("powFunGen",
               } else {
                 x@return.names <- names(statistic.return)
               }
-            }
+ ##           }
             
 
 ### -----
@@ -997,8 +1164,7 @@ setMethod("workhorse",
             ## - n.iter: - is the total number of iterations that should be
             ##             acchieved AFTER running workhorse
             ##           - must be integer of length 1
-            ## - cluster: - must come correct from object as object cluster
-            ##              or not
+
 
 
             ## -----
@@ -1027,7 +1193,7 @@ setMethod("workhorse",
               if (!is.na(n.iter)) {
                 n.iter <- as.integer(n.iter)
                 if ( !is.na(object@iter)) {
-                  ## this is the case if objcect is updated only
+                  ## this is the case if object is updated only
                   ## how many iterations were done already:
                   available.iter <- object@iter
                    ## how many iterations are we doing in this run:
@@ -1256,18 +1422,12 @@ setMethod("exDat",
             }
 
             ## determin the index for endpoint
+            ## - existence of endpoint.example in enpoint.names
+            ##   is done by powEx() earlier
             endpoint.example <- x@endpoint.example
             if (is.na(endpoint.example)) {
               endpoint.example.integer <-  1
             } else {
-              if (all(endpoint.example != x@return.names)) {
-                stop(strwrap(gettextf(
-                    "You have chosen an endpoint name that is not available,
-                     please select one of the following list: %s",
-                    dQuote(x@return.names)),
-                    prefix = " ", initial = ""),
-                    call. = FALSE)
-                }
               endpoint.example.integer <-
                 which(endpoint.example == x@return.names)
             }
@@ -1361,7 +1521,7 @@ setMethod("sampleSize",
                 == min(power.example, na.rm = TRUE)) {
               stop(strwrap(gettextf(
                   "The observed power of the example is constant.
-                   The value is: %.
+                   The value is: %s.
                    It is not meaningful do further calculations.",
                   min(dat.example$power),
                   prefix = " ", initial = "")),
@@ -1431,13 +1591,6 @@ setMethod("sampleSize",
                          prefix = " ", initial = ""))
                      ## forceDivisor handling
                      if (forceDivisor) {
-                       if (is.na(divisor)) {
-                         ## find out the greatest common divisor
-                         divisor <- 1
-                         for ( i in 2:min(n.vec) ) {
-                           divisor <- ifelse(all(n.vec %% i == 0), i, divisor)
-                         }
-                       }
                        if (sample.size %% divisor) {
                          sample.size <- sample.size +
                            (divisor - sample.size %% divisor)
@@ -1501,7 +1654,19 @@ setMethod("sampleSize",
                      ## all data)
                      m.lm <- lm(sample.size ~ transform(power),
                                 data = dat.example)
-##                     library(grid)
+                     ## forceDivisor handling
+                     if (forceDivisor) {
+                       if (sample.size %% divisor) {
+                         sample.size <- sample.size +
+                           (divisor - sample.size %% divisor)
+                         message(strwrap(gettextf(
+                             "Returning %s instead of the estimator to achieve
+                              a divisibility with the divisor %s.",
+                             sample.size,
+                             divisor),
+                             prefix = " ", initial = ""))
+                       }
+                     }
                      mypanel <- function(x, y, ...) {
                        panel.xyplot(x, y, col = "blue", ...)
                        ## suppressWarnings because this is for visualisation
@@ -1691,14 +1856,9 @@ construct.powEx <- function(theta,
   ## --- forceDivisor
   ## handle forceDivisor and generate divisor
   divisor <- as.integer(NA)
-  if (is.logical(forceDivisor)) {
-    if (forceDivisor){
-      ## if forceDivisor is TRUE we set the divisor to the default 2
-      divisor <- as.integer(2)
-    }
-  } else {
-    ## if forceDivior is numeric we set forceDivisor to TRUE
-    if (is.numeric(forceDivisor)) {
+  if (!is.logical(forceDivisor)) {
+    ## if forceDivisor is numeric we set forceDivisor to TRUE
+    if (is.numeric(forceDivisor) && length(forceDivisor) == 1) {
       if (forceDivisor <= 0) {
         stop(strwrap("If a divisor should be used, 
                      the argument 'forceDivisor' should get a positive number

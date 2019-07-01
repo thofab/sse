@@ -1,4 +1,4 @@
-context("Advanced applications")
+context("Test using of parallel computations")
 
 library(sse)
 library(testthat)
@@ -19,11 +19,23 @@ powFun <- function(psi){
    return(c(w = w, t = t))
    }
 
-calc <- powCalc(psi, statistic = powFun, n.iter = 99)
+calc <- powCalc(psi, statistic = powFun, n.iter = 99, cluster = TRUE)
+calc.4 <- powCalc(psi, statistic = powFun, n.iter = 99, cluster = 4)
+calc.1 <- powCalc(psi, statistic = powFun, n.iter = 99, cluster = 1)
+calc.niter1 <- powCalc(psi, statistic = powFun, n.iter = 1, cluster = TRUE)
 
 pow.w <- powEx(calc, theta = 1, drop = 0.1, endpoint = "w")
 
-plot(pow.w, smooth = 0.5,
+test_that("update without any changes", {
+  pow.w.u <- update(pow.w)
+  expect_equal(pow.w, pow.w.u, check.attributes = TRUE)
+})
+
+pow.w.rf <- refine(pow.w)
+pow.w.rfrf <- refine(pow.w.rf)
+
+
+plot(pow.w, smooth = 0.5, ## FIXME does not work with calc.niter1
      xlab = expression(paste("Delta, ", delta)),
      ylab = "Total sample size",
      main = "Wilcoxon Test")
@@ -69,16 +81,13 @@ pow.t.parametric.xi05 <- powEx(calc.parametric,
 
 plot(pow.t.parametric)
 
-show(pow.t.parametric)
-
 ### --------------------------------- TESTS
-test_that("endpoints", {
+test_that("", {
 #
   ## selecting an endpoint that does not exist
   expect_error(
       powEx(calc, theta = 1, drop = 0.1, endpoint = "T")  ## READ ERROR MESSAGE
   )
-  expect_equal(pow.t.parametric@endpoint.example, "t")
 })
 
 
@@ -88,16 +97,17 @@ test_that("powPar with data", {
   expect_equal(pp(psi, "F.hat"), pilot.data)
 })
 
-
-test_that("refine", {
-  pow.w.rf <- refine(pow.w)
-  expect_equal(pow.w.rf@iter, pow.w@iter)
-  expect_equal(pow.w.rf@iter.example, pow.w@iter * 10)
+test_that("powCalc", {
+  expect_warning(
+      powCalc(psi, statistic = powFun, n.iter = 99, cluster = c(4, 8))
+  )
 })
 
 test_that("powEx", {
   ## choosing and endpoint for example that is not part of the calc-object
-  expect_error(powEx(calc.power, theta = 2, endpoint = "s"))  ## READ MESSAGE
+  expect_error(
+      powEx(calc.power, theta = 2, endpoint = "s")  ## READ MESSAGE
+  )
 })
 
 test_that("plot", {
@@ -105,18 +115,4 @@ test_that("plot", {
   expect_error(
       plot(pow.t.parametric.xi05)
   )
-})
-
-test_that("List as return", {
-  powFun.list <- function(psi){
-    a <- sample(pp(psi, "F.hat"), size = n(psi) / 2, replace = TRUE)
-    b <- sample(pp(psi, "F.hat"), size = n(psi) / 2, replace = TRUE) + theta(psi)
-    w <- wilcox.test(a, b)$p.value < 0.05
-    t <- t.test(a, b)$p.value < 0.05
-    length(c(a,b) %% 2)
-    return(list(power = c(w = w, t = t), size = sum(c(a,b) %/% 2)))
-}
-expect_error(    
-    calc.power <- powCalc(psi, statistic = powFun.list)
-)
 })
