@@ -1,0 +1,10 @@
+version 0.7-10 2019/07/01
+        update(): corrections that allow updating different aspects of n, theta
+	and xi in combination
+	refine(): Change argument name 'n.iter' to 'factor' (to show that there
+	  is a difference to n.iter in calc).
+	refine(): Do not change slot 'iter' of the power-object.
+	Handling of forceDivisor, a best guess for the divisor is added based 
+	  on the chosen n-values.
+	Refining many test.
+	Adding some test for the current implementation of parallel computing.

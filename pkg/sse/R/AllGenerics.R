@@ -45,7 +45,7 @@ setGeneric(name = "n",
            )
 
 setGeneric(name = "refine",
-           def = function(object, n.iter = 10){
+           def = function(object, factor = 10){
              standardGeneric("refine")
            })
 

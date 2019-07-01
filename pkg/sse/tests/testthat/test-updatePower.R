@@ -2,124 +2,180 @@ context("Update, statistic returns a power")
 
 library(sse)
 library(testthat)
-psi1 <- powPar(theta = seq(from = 0, to = 1, by = 0.1),
-               n = seq(from = 0, to = 100, by = 10))
-psi2 <- powPar(theta = seq(from = 0, to = 1, by = 0.1),
-               n = seq(from = 50, to = 100, by = 10))
+
+## n
+n.l <- list(
+n0 = seq(from = 50, to = 100, by = 10),    # ..XXXX.., corse
+n1 = seq(from = 50, to = 100, by = 5),     # ..XXXX.., fine
+n2 = c(seq(from = 50, to = 80, by = 2),    # ..XXXX.., mixed
+       seq(from = 85, to = 100, by = 5)),
+n3 = seq(from = 70, to = 100, by = 10),    # ....XX.., corse subset
+n4 = seq(from = 70, to = 150, by = 10),    # ..XXXXXX, corse extendet
+n5 = seq(from = 70, to = 150, by = 10),    # ....XXXX, corse subset, extended
+n6 = seq(from = 0, to = 150, by = 10),     # XXXXXXXX, corse subset, extended
+n7 = seq(from = 160, to = 200, by = 10),   # ........XX, corse
+n8.e = c(seq(from = 50, to = 80, by = 2),  # mixed with dublicated element
+       seq(from = 80, to = 100, by = 5)),
+n9 = 80)                                   # length 1 and existing element
+
+
+## theta
+theta.l <- n.l
+theta.l <- lapply(theta.l, function(x) {
+  x / 100
+})
+names(theta.l) <- sub("n", "theta", names(theta.l))
+  
+## xi
+xi.l <- list(
+    xi0 = seq(from = 1, to = 3, by = 1),     # ..XXXX.., corse
+    xi1 = seq(from = 1, to = 3, by = 0.5),   # ..XXXX.., fixie
+    xi2 = c(seq(from = 1, to = 1, by = 1),   # ..XXXX.., mixed
+            seq(from = 1.5, to = 3, by = 0.5)),
+    xi3 = seq(from = 2, to = 3, by = 1),     # ....XX.., corse subset
+    xi4 = seq(from = 1, to = 5, by = 1),     # ..XXXXXX, corse extendet
+    xi5 = seq(from = 2, to = 5, by = 1),     # ....XXXX, corse subset, extended
+    xi6 = seq(from = 0.5, to = 5, by = 0.5), # XXXXXXXX, corse subset, extended
+    xi7 = seq(from = 4, to = 5, by = 1),     # ........XX, corse
+    xi8.e = c(seq(from = 1, to = 2, by = 1), # mixed with dublicated element
+            seq(from = 2, to = 5, by = 0.5)),
+    xi9 = 2)                                 # length 1 and existing element
+
+
+attach(n.l)
+attach(theta.l)
+attach(xi.l)
+psi0 <- powPar(n = n0,
+               theta = theta0,
+               xi = xi0)
+
 ##
+powFun0 <- function(psi){
+  n  <-  n(psi)
+  theta  <-  theta(psi)
+  xi <- xi(psi)
+  return(((n * theta) / 100) / xi)
+  }
 powFun1 <- function(psi){
   n  <-  n(psi)
   theta  <-  theta(psi)
   return( (n * theta) / 100)
   }
 
+calc.0.0.0.0 <- powCalc(psi0, statistic = powFun0)
 
-##
-n.new <- as.integer(seq(from = 0, to = 100, by = 5))
-n.new2 <- as.integer(seq(from = 50, to = 100, by = 5))
-n.new3 <- as.integer(c(seq(from = 50, to = 75, by = 2),
-                       seq(from = 75, to = 100, by = 5)))
-n.new5 <- seq(from = 50, to = 150, by = 5)
-theta.new <- seq(from = 0, to = 1, by = 0.05)
+## correct result for powFun, n, theta, xi
+res0 <- function(n, theta, xi){
+  res.array <- array((n %*% t(theta)) / 100,
+                     ## last dimension 1 because of powfun:
+                     dim = c(length(n), length(theta), length(xi), 1))
+  for (i in seq(along.with = xi)) {
+    res.array[, , i, ] <- res.array[, , i, ] / xi[i]
+  }
+  return(res.array)
+}
+
+## ------------------------------------------------------------------
+## auto test
+for (n.i in names(n.l)) {
+  for (theta.i in names(theta.l)) {
+    for (xi.i in names(xi.l)) {
+      ## changing all n, theta and xi
+      what <- paste0(
+"update(calc.0.0.0.0,
+        n = ", n.i, ",
+        theta = ", theta.i, ",
+        xi = ", xi.i, ")@core")
+      ## additionally changing the statistic also
+      what2 <- paste0(
+"update(calc.0.0.0.0,
+       n = ", n.i, ",
+       theta = ", theta.i, ",
+       xi = ", xi.i, ", statistic = powFun0)@core")
+      cat("\n---------------------------------\n")
+      cat(what)
+      cat("\n")
+      res <- paste0("res0(", n.i, ", ", theta.i, ", ", xi.i, ")")
+      if (grepl(".e", n.i, fixed = TRUE)
+          | grepl(".e", theta.i, fixed = TRUE)
+          | grepl(".e", xi.i, fixed = TRUE)) {
+        ## expect an error
+        expect_error(eval(parse(text = what)))
+      } else {
+        ## if any n0 theta0 or xi0: expect a warning if not 7
+        if (n.i == "n0" & !(theta.i == "theta7" | xi.i == "xi7")
+            | theta.i == "theta0" & !(n.i == "n7" | xi.i == "xi7")
+            | xi.i == "xi0" & !(n.i == "n7" | theta.i == "theta7")) {
+          expect_warning(eval(parse(text = what)))
+        }
+        ## should work
+        eval(parse(text = paste0("expect_equal(",
+                                 paste0("suppressWarnings(",
+                                        what,
+                                        ")"),
+                                 ",",
+                                 res,
+                                 ", check.attributes = FALSE)")))
+        ## should work but completely new evaluation
+        cat("\n")
+        cat(what2)
+        cat("\n")
+        eval(parse(text = paste0("expect_equal(",
+                                 what2,
+                                 ",",
+                                 res,
+                                 ", check.attributes = FALSE)")))
+      }
+    }
+  }
+}
 
 
-## correct result for
-result1.1.x <- array(seq(from = 0, to = 100, by = 10)
-                     %*% t(seq(from = 0, to = 1, by = 0.1)) / 100,
-                     dim = c(11, 11, 1, 1))
-result1.1.n <- array(seq(from = 0, to = 100, by = 5)
-                     %*% t(seq(from = 0, to = 1, by = 0.1)) / 100,
-                     dim = c(21, 11, 1, 1))
-result1.1.t <- array(seq(from = 0, to = 100, by = 10)
-                     %*% t(seq(from = 0, to = 1, by = 0.05)) / 100,
-                     dim = c(11, 21, 1, 1))
-result1.1.nt <- array(seq(from = 0, to = 100, by = 5)
-                      %*% t(seq(from = 0, to = 1, by = 0.05)) / 100,
-                      dim = c(21, 21, 1, 1))
-result1.1.n2 <- array(seq(from = 50, to = 100, by = 5)
-                      %*% t(seq(from = 0, to = 1, by = 0.1)) / 100,
-                      dim = c(11, 11, 1, 1))
-result1.1.n3 <- array(n.new3 %*% t(seq(from = 0, to = 1, by = 0.1)) / 100,
-                      dim = c(length(n.new3), 11, 1, 1))
-result1.1.n5 <- array(n.new5 %*% t(seq(from = 0, to = 1, by = 0.1)) / 100,
-                      dim = c(length(n.new5), 11, 1, 1))
-result2.1.x <- array(seq(from = 0, to = 100, by = 10)
-                     %*% t(seq(from = 0, to = 1, by = 0.1)) / 100,
-                     dim = c(11, 11, 1, 1))
-
-
-##
-calc1.1.1 <- powCalc(psi1, statistic = powFun1)
-
-pow1.1.1 <- powEx(calc1.1.1, theta = 0.5, power = 0.4)
-
-plot(pow1.1.1, at = c(0.4, seq(from = 0.5, to = 0.9, by = 0.1)))
-
+# ---------------------------------
 test_that("update without any changes", {
-#
-  calc1.1.2 <- update(calc1.1.1)
-  expect_equal(calc1.1.2@core, result1.1.x, check.attributes = FALSE)
+  expect_equal(update(calc.0.0.0.0)@core,
+               res0(n0, theta0, xi0),
+               check.attributes = FALSE)
 })
 
-
-
-test_that("increasing n within existing range of n", {
+# ---------------------------------
+test_that("update of an element that is not allowed", {
 #
-  calc1.1.3 <- update(calc1.1.1, n = n.new)
-  expect_equal(calc1.1.3@core, result1.1.n, check.attributes = FALSE)
+  expect_error(
+      update(calc.0.0.0.0, iter.example = 2)
+  )
 })
 
-
-
-test_that("increasing theta within existing range of theta", {
+# ---------------------------------
+test_that("update of n.iter when it does not make sense", {
 #
-  calc1.1.4 <- update(calc1.1.1, theta = theta.new)
-  expect_equal(calc1.1.4@core, result1.1.t, check.attributes = FALSE)
+  expect_warning(
+      update(calc.0.0.0.0, n.iter = 2)
+  )
+  expect_equal(
+      update(calc.0.0.0.0, n.iter = 2)@core,
+      res0(n0, theta0, xi0),
+      check.attributes = FALSE)
 })
 
-
-
-test_that("increasing theta and n within existing range of theta and n", {
+# ---------------------------------
+test_that("update of n, theta, xi with dublicated element", {
 #
-  calc1.1.5 <- update(calc1.1.1, n.iter = NA, n = n.new, theta = theta.new)
-  expect_equal(calc1.1.5@core, result1.1.nt, check.attributes = FALSE)
+  expect_error(
+      update(calc.0.0.0.0, n = n8)
+  )
+  expect_error(
+      update(calc.0.0.0.0, n = theta8)
+  )
+  expect_error(
+      update(calc.0.0.0.0, n = xi8)
+  )
 })
 
-
-
+# ---------------------------------
 test_that("update statistic only", {
 #
-  calc1.1.6 <- update(calc1.1.1, statistic = powFun1)
-  expect_equal(calc1.1.6@core, result1.1.x, check.attributes = FALSE)
+  expect_equal(update(calc.0.0.0.0, statistic = powFun0)@core,
+               res0(n0, theta0, xi0),
+               check.attributes = FALSE)
 })
-
-
-
-test_that("update statistic and increasing n within existing range of n", {
-#
-  calc1.1.7 <- update(calc1.1.1, statistic = powFun1, n.iter = NA, n = n.new)
-  expect_equal(calc1.1.7@core, result1.1.n, check.attributes = FALSE)
-})
-
-
-test_that("updating n within smaller range of n", {
-#
-  calc1.1.8 <- update(calc1.1.1, n.iter = NA, n = n.new2)
-  calc1.1.9 <- update(calc1.1.1, n.iter = NA, n = n.new3)
-  expect_equal(calc1.1.8@core, result1.1.n2, check.attributes = FALSE)
-  expect_equal(calc1.1.9@core, result1.1.n3, check.attributes = FALSE)
-})
-
-
-test_that("updating n partially new range of n", {
-#
-  calc1.1.10 <- update(calc1.1.1, n.iter = NA, n = n.new5)
-  expect_equal(calc1.1.10@core, result1.1.n5, check.attributes = FALSE)
-  calc1.1.10 <- update(calc1.1.1, n.iter = NA, n = n.new5, keep = TRUE)
-})
-
-
-### ------------------------------------------------------------- CHECK MANUALLY
-calc1.1.9 <- update(calc1.1.1, n.iter = NA, n = n.new3)
-plot(powEx(calc1.1.9, theta = 1),
-     at = c(0.4, seq(from = 0.5, to = 0.9, by = 0.1)))

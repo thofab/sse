@@ -6,10 +6,10 @@
   Increasing the number of iterations for estimating the sample size for
   the theta and xi as specified for the example.
 }
-\usage{refine(object, n.iter = 10)}
+\usage{refine(object, factor = 10)}
 \arguments{
   \item{object}{An object of class \code{power}.}
-  \item{n.iter}{An integer larger than one that is multiplied with the
+  \item{factor}{An integer larger than one that is multiplied with the
     available number of iterations the target number of iterations.}
 }
 \note{This function is only useful if the object of class \code{power}

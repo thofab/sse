@@ -57,11 +57,15 @@ test_that("update without any changes", {
   expect_equal(calc1.3.2@core, result1.3.x, check.attributes = FALSE)
 })
 
-test_that("increasing n.iter", {
-#
+test_that("n.iter", {
+  ## increasing
   calc1.2.3 <- update(calc1.2.1, n.iter = 500)
   expect_equal(calc1.2.3@core, result1.2.x, check.attributes = FALSE)
   expect_equal(calc1.2.3@iter, 500)
+  ## n.iter length > 1
+  expect_warning(
+      update(calc1.2.1, n.iter = c(500,100))
+  )
 })
 
 
