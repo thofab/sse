@@ -1,3 +1,6 @@
+version 0.7-11 2019/07/19
+	removing tests of parallel computing since these fail on some
+	systems and since parallel computing is only under development
 version 0.7-10 2019/07/01
         update(): corrections that allow updating different aspects of n, theta
 	and xi in combination
