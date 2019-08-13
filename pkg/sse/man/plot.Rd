@@ -13,10 +13,10 @@
   \item{y}{Not used}
   \item{...}{additional arguments implemented:
     \itemize{
-      \item{\code{at= c(0.9, 0.8, 0.85, 0.95)} a numeric vector giving
+      \item{\code{at = c(0.9, 0.8, 0.85, 0.95)} a numeric vector giving
 	breakpoints along the power range.
-        Contours (if any) will be drawn at these values. The countour
-	line of the examlpe will be emphasised. If \code{example = FALSE} the first
+        Contours (if any) will be drawn at these values. The contour
+	line of the example will be emphasised. If \code{example = FALSE} the first
 	number indicates, which contour should be emphasized.}
       \item{\code{smooth = FALSE} logical that indicates if the contours should be
 	smoothed. If TRUE a span of 0.75 will be used by default. Alternatively the
@@ -35,7 +35,7 @@
 }
 
 \details{
-  Generates a contourplot with theta on the x-axis and n on the y-axis
+  Generates a contour plot with theta on the x-axis and n on the y-axis
   and the contours for the power indicated with the argument at.
 }
 \seealso{\code{\link{inspect}} for drawing an inspection plot and
