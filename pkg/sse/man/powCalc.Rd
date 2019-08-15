@@ -30,8 +30,6 @@ Power calculation
   interpreted as the power.
 }
 \value{An object of class \code{powCalc}.}
-\seealso{The function \code{\link{merge}} will, together with an object
-  of class \code{powEx} form an object of class \code{power}}
 \examples{
 ## defining the range of n and theta to be evaluated
 psi <- powPar(theta = seq(from = 0.5, to = 1.5, by = 0.1),
