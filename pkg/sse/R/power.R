@@ -1975,10 +1975,10 @@ plot.power <- function(x,
   ## ---
   ## handling the at-argument
   if (!is.numeric(at)) {
-    stop("The argument \"at\" has to be numeric")
+    stop("The argument 'at' has to be numeric")
   }
   if (any(at <= 0) | any(at >= 1)) {
-    stop("The argument \"at\" has to be between of 0 and 1")
+    stop("The argument 'at' has to be > 0 and < 1")
   }
   if (example){
     ## sorting at that the power.example is the first element

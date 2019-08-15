@@ -1,10 +1,8 @@
 Package: sse
 Type: Package
 Title: Sample Size Estimation
-Version: 0.7-11
-Author: Thomas Fabbro
-URL: https://power.r-forge.r-project.org/
-BugReports: https://r-forge.r-project.org/projects/power/
+Version: 0.7-12
+Author: Thomas Fabbro [aut, cre]
 Maintainer: Thomas Fabbro <thomas.fabbro@unibas.ch>
 Description: Provides functions to evaluate user-defined power functions for a parameter range, and draws a sensitivity plot. It also provides a resampling procedure for semi-parametric sample size estimation and methods for adding information to a Sweave report.
 License: GPL-3

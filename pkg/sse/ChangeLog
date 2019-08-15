@@ -1,3 +1,6 @@
+version 0.7-12 2019/08/13
+	correcting some spelling errors in man pages
+	correcting some spelling in warning/error messages
 version 0.7-11 2019/07/19
 	removing tests of parallel computing since these fail on some
 	systems and since parallel computing is only under development
