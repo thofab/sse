@@ -10,7 +10,7 @@
 \arguments{
   \item{object}{An object of class \code{power}.}
   \item{factor}{An integer larger than one that is multiplied with the
-    available number of iterations the target number of iterations.}
+    available number of iterations to from the target number of iterations.}
 }
 \note{This function is only useful if the object of class \code{power}
   was generated using a resamling approach.}

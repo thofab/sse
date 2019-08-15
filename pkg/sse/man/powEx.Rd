@@ -54,7 +54,7 @@ method = c("default", "lm", "step"), lm.range = NA, forceDivisor = FALSE)
 }
 \value{An object of class \code{power}.}
 \seealso{In older verstions of the package: The function
-  \code{\link{merge}} was used together with an object
+  \code{merge} was used together with an object
   of class \code{powEx} to form an object of class \code{power}}
 \examples{
 ## defining the range of n and theta to be evaluated
