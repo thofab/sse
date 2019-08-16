@@ -15,6 +15,7 @@
 \note{This function is only useful if the object of class \code{power}
   was generated using a resamling approach.}
 \examples{
+\donttest{ ## takes quite some time
 ## defining the range of n and theta to be evaluated
 psi <- powPar(theta = seq(from = 0.5, to = 1.5, by = 0.1),
               n = seq(from = 20, to = 60, by = 2))
@@ -35,8 +36,7 @@ pow <- powEx(calc, theta = 1, power = 0.9)
 
 ## another 900 (= 1000 - 100) iterations
 refine(pow)
-
-
+}
 }
 \keyword{methods}
 
