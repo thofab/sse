@@ -1,16 +1,21 @@
 version 0.7-12 2019/08/13
+	splitting of tests into tests at tests/ and inst/slowTests to
+	  reduce the time used for R CMD check
 	correcting some spelling errors in man pages
 	correcting some spelling in warning/error messages
+	changing the sequence of asserting that arguments are fine for
+	  (argument 'smooth' in plot() and of 'lm.range' in powEx())
+	some resolving of lintr issues (line length etc.)
 version 0.7-11 2019/07/19
 	removing tests of parallel computing since these fail on some
-	systems and since parallel computing is only under development
+	  systems and since parallel computing is only under development
 version 0.7-10 2019/07/01
         update(): corrections that allow updating different aspects of n, theta
 	and xi in combination
 	refine(): Change argument name 'n.iter' to 'factor' (to show that there
 	  is a difference to n.iter in calc).
 	refine(): Do not change slot 'iter' of the power-object.
-	Handling of forceDivisor, a best guess for the divisor is added based 
+	Handling of forceDivisor, a best guess for the divisor is added based
 	  on the chosen n-values.
 	Refining many test.
 	Adding some test for the current implementation of parallel computing.

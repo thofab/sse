@@ -125,9 +125,17 @@ inspect(pow.resample2)
 inspect(powEx(calc.resample, theta = 1, power = 0.9, method = "step"))
 inspect(powEx(calc.resample2, theta = 1, power = 0.9, method = "step"))
 
-inspect(powEx(calc.resample2, theta = 1, power = 0.9, method = "step", forceDivisor = 2))
+inspect(powEx(calc.resample2,
+              theta = 1,
+              power = 0.9,
+              method = "step",
+              forceDivisor = 2))
 inspect(
-    powEx(calc.resample2, theta = 1, power = 0.9, method = "step", forceDivisor = TRUE)
+    powEx(calc.resample2,
+          theta = 1,
+          power = 0.9,
+          method = "step",
+          forceDivisor = TRUE)
 )
 
 
