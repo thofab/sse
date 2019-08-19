@@ -661,7 +661,8 @@ setMethod("update",
                   new.calc <- TRUE
                   any.change <- TRUE
                 } else if (!new.calc
-                           & any(!(round(slot(newObj, s), 10) %in% round(slot(object, s), 10)))) {
+                           & any(!(round(slot(newObj, s), 10)
+                             %in% round(slot(object, s), 10)))) {
                   message(strwrap(
                       "It contains some available elements ->
                        Ony the new elements will be calculated.",
@@ -669,8 +670,10 @@ setMethod("update",
                   ## --- increase theta
                   increase.theta <- TRUE
                 } else if (!new.calc
-                           & all(round(slot(newObj, s), 10) %in% round(slot(object, s), 10))
-                           & length(slot(newObj, s) < length(slot(object, s)))) {
+                           & all(round(slot(newObj, s), 10)
+                                 %in% round(slot(object, s), 10))
+                           & length(slot(newObj, s)
+                                    < length(slot(object, s)))) {
                   message(strwrap(
                       "It contains only available elements ->
                        No new elements will be calculated.",
@@ -713,17 +716,19 @@ setMethod("update",
                       prefix = " ", initial = ""))
                   increase.xi <- TRUE
                 } else if (!new.calc
-                           & all(round(slot(newObj, s), 10) %in% round(slot(object, s), 10))
-                           & length(slot(newObj, s) < length(slot(object, s)))) {
+                           & all(round(slot(newObj, s), 10)
+                                 %in% round(slot(object, s), 10))
+                           & length(slot(newObj, s)
+                                    < length(slot(object, s)))) {
                   message(strwrap(
                       "It contains only available elements ->
                        No new elements will be evaluated.",
                       prefix = " ", initial = ""))
                   ## --- shrink xi
-                    takeElements <-
-                    round(slot(newObj, s), 10) %in% round(slot(object, s), 10)
-                  giveElements <-
-                    round(slot(object, s), 10) %in% round(slot(newObj, s), 10)
+                  takeElements <- (round(slot(newObj, s), 10)
+                    %in% round(slot(object, s), 10))
+                  giveElements <- (round(slot(object, s), 10)
+                    %in% round(slot(newObj, s), 10))
                   takeObj@core <- array(NA,
                                         dim = c(length(takeObj@n),
                                                 length(takeObj@theta),
@@ -1122,7 +1127,8 @@ setMethod("powFunGen",
             ##   ## if (powFun.info@return.power){
             ##   ##   size.array <- array(NA, dim = c(dim(object), n.size))
             ##   ## } else {
-            ##   ##   size.array <- array(NA, dim = c(dim(object), n.size, n.iter))
+            ##   ##   size.array <- array(NA,
+            ##                            dim = c(dim(object), n.size, n.iter))
             ##   ## }
  ##           } else {
               x@return.list <- FALSE
@@ -1838,19 +1844,18 @@ construct.powEx <- function(theta,
   } else {
     ## for method "default" or "lm" we set the lm.range to 0.2 or if provided
     ## test it.
-    if (is.na(lm.range)) {
-      lm.range <- 0.2
-    } else {
-      if (length(lm.range) > 1){
+    if (length(lm.range) > 1) {
         warning(strwrap(
             "The argument 'lm.range' should have a length of one.
              Only the first element is used",
             prefix = " ", initial = ""))
         lm.range <- lm.range[1]
-      }
-      if (lm.range < 0 | lm.range > 1){
-        stop("The argument 'lm.range' should be in the range [0; 1]")
-      }
+    }
+    if (is.na(lm.range)) {
+      lm.range <- 0.2
+    } 
+    if (lm.range < 0 | lm.range > 1){
+      stop("The argument 'lm.range' should be in the range [0; 1]")
     }
   }
   ## --- forceDivisor
@@ -1925,6 +1930,10 @@ plot.power <- function(x,
 
   # ---
   ## handling the smooth-argument
+  if (length(smooth) > 1) {
+    warning("Only the first element of <smooth> is used.")
+    smooth <- smooth[1]
+  }
   if (is.logical(smooth) & smooth) {
     span <- 0.75
     dat[!is.na(dat$power) & dat$power > 0 & dat$power < 1, "power"] <- fitted(
@@ -1933,10 +1942,6 @@ plot.power <- function(x,
               span = span))
   }
   if (is.numeric(smooth)) {
-    if (length(smooth) > 1) {
-      warning("Only the first element of <smooth> is used.")
-      smooth <- smooth[1]
-    }
     if (smooth <= 0) {
       stop(strwrap(
           "The argument 'smooth' has to be > 0,

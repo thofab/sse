@@ -110,7 +110,8 @@ test_that("plot", {
 test_that("List as return", {
   powFun.list <- function(psi){
     a <- sample(pp(psi, "F.hat"), size = n(psi) / 2, replace = TRUE)
-    b <- sample(pp(psi, "F.hat"), size = n(psi) / 2, replace = TRUE) + theta(psi)
+    b <- sample(pp(psi, "F.hat"),
+                size = n(psi) / 2, replace = TRUE) + theta(psi)
     w <- wilcox.test(a, b)$p.value < 0.05
     t <- t.test(a, b)$p.value < 0.05
     length(c(a,b) %% 2)
