@@ -11,20 +11,6 @@
 \maketitle
 % ---------------------------------
 \SweaveOpts{echo=true,results=hide,include=false,eps=false,strip.white=false,pdf.version=1.4,prefix.string=ex}
-
-
-<<sweave, echo = false>>=
-options(SweaveHooks=list(## options for all lattice figures
-fig=function() {require(lattice)
-  require(grid)
-  ltheme <- canonical.theme(color = FALSE)     ## in-built B&W theme  
-  ltheme$strip.background$col <- "transparent" ## change strip bg  
-  lattice.options(default.theme = ltheme)      ## set as default  
-  trellis.par.set(list(superpose.symbol = list(pch = 15:17),fontsize=list(text=14)))
-}))
-@ 
-
-
 % ---------------------------------
 
 <<misc>>=
@@ -147,6 +133,7 @@ tex(pow, type = "nEval")
 @ 
 
 returns the string ``\Sexpr{tex(pow, type = "nEval")}'' and can be used directly within the Sweave document e.g. with the \LaTeX-command ``Sexpr''.
+
 
 % ---------------------------------
 \section{Using a resampling approach}
