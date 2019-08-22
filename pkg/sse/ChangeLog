@@ -1,3 +1,6 @@
+version 0.7-12 2019/08/22
+	vignette: removing unused options
+	man pages: several changes to harmonize wording and improve structure
 version 0.7-12 2019/08/13
 	splitting of tests into tests at tests/ and inst/slowTests to
 	  reduce the time used for R CMD check

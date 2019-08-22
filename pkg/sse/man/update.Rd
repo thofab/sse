@@ -1,17 +1,19 @@
 \name{update-methods}
 \docType{methods}
 \alias{update}
-\title{
-  Updating a powCalc or a power object.
-}
+
+\title{Updating a powCalc or a power object.}
+
 \description{
-  A function for updating an existing object of class \code{powCalc} or
-  \code{power}.
+  A function for updating an existing object of class \linkS4class{powCalc} or
+  \linkS4class{power}.
 }
+
 \usage{update(object, ...)}
 
 \arguments{
-  \item{object}{An object of class \code{powCalc} or \code{power}.}
+  \item{object}{An object of class \linkS4class{powCalc} or
+    \linkS4class{power}.}
   \item{...}{The following elements (slots) of the object can be
     updated:
     \describe{
@@ -32,11 +34,15 @@
     }
   }
 }
+
 \note{Be careful if you use this function to update objects of class
-  \code{power}.}
-\value{An object of class \code{powCalc}.}
+  \linkS4class{power}.}
+
+\value{An object of class \linkS4class{powCalc}.}
+
 \seealso{\code{\link{powCalc}} for geneating new objcets of class
-  \code{powCalc}.}
+  \linkS4class{powCalc}.}
+
 \examples{
 ## defining the range of n and theta to be evaluated
 psi <- powPar(theta = seq(from = 0.5, to = 1.5, by = 0.1),
@@ -67,4 +73,5 @@ plot(pow,
      ylab = "Total Sample Size",
      at = c(0.85, 0.9, 0.95))
 }
+
 \keyword{methods}
