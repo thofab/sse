@@ -24,6 +24,7 @@
   \linkS4class{power} was generated using a resamling approach.}
 
 \examples{
+\donttest{ ## takes quite some time
 ## defining the range of n and theta to be evaluated
 psi <- powPar(theta = seq(from = 0.5, to = 1.5, by = 0.1),
               n = seq(from = 20, to = 60, by = 2))
@@ -37,17 +38,13 @@ powFun <- function(psi){
 
 
 ## evaluating the power-function for all combinations of n and theta
-calc <- powCalc(psi, powFun, n.iter = 100)
+calc <- powCalc(psi, powFun, n.iter = 10)
 
 ## adding example at theta of 1 and power of 0.9
 pow <- powEx(calc, theta = 1, power = 0.9)
 
 ## another 900 (= 1000 - 100) iterations
-\donttest{ ## takes quite some time
 refine(pow)
-}
-\dontshow{## less realistic but fast
-refine(pow, factor = 2)
 }
 }
 
