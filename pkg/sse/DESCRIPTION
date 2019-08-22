@@ -1,7 +1,7 @@
 Package: sse
 Type: Package
 Title: Sample Size Estimation
-Version: 0.7-12
+Version: 0.7-13
 Author: Thomas Fabbro [aut, cre]
 Maintainer: Thomas Fabbro <thomas.fabbro@unibas.ch>
 URL: http://r-forge.r-project.org/projects/power/

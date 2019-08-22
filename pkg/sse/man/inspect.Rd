@@ -1,14 +1,29 @@
 \name{inspect}
 \docType{methods}
 \alias{inspect}
+
 \title{Inspection Plot}
+
 \description{
   Creating a plot that allows to inspect the sample size calculation.
 }
+
 \usage{inspect(object)}
+
 \arguments{
-  \item{object}{An object of class \code{power}.}
+  \item{object}{An object of class \linkS4class{power}.}
 }
+
+\details{The plot shows for every evaluated theta the sample size and
+  the power on a transformed scale.
+  The method used for sample size estimation 'step' or 'lm' is
+  indicated.
+  If the method 'lm' is used a red regression line is shown for the
+  range that was used for estimation.
+}
+
+\value{A plot is generated but nothing is returned.}
+
 \examples{
 ## defining the range of n and theta to be evaluated
 psi <- powPar(theta = seq(from = 0.5, to = 1.5, by = 0.1),
@@ -33,5 +48,6 @@ pow <- powEx(calc, theta = 1, power = 0.9)
 ## drawing an inspection plot
 inspect(pow)
 }
+
 \keyword{methods}
 
