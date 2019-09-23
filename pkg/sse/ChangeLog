@@ -1,3 +1,7 @@
+version 0.7-14 2019/0
+	adding error message in update() if n.iter is smaller than
+          available (also adding corresponding test)
+	DESCRIPTION: removing 'lintr' from Suggests
 version 0.7-13 2019/08/22
 	vignette: removing unused options
 	man pages: several changes to harmonize wording and improve structure

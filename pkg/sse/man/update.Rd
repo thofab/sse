@@ -1,4 +1,4 @@
-\name{update-methods}
+\name{update}
 \docType{methods}
 \alias{update}
 
@@ -19,9 +19,11 @@
     \describe{
       \item{n.iter}{A number indicating the number of iterations used to
 	dertermine the power if the calcualation is based on
-	resamlpling.
-	The existing iterations will be kept. Therefore after evaluation
-	the number of iterations will be \code{n.iter}.}
+	resampling.
+	The existing iterations will be kept. \code{n.iter} indicates
+	the number of iterations after evaluation, therefore
+	\code{n.iter} has to be equal or larger than the existing
+	number of iterations.}
       \item{n}{A vector with numbers for evaluating the power.
 	New elements will be evaluated and existing elements reused.
 	If some elements of the original are not part of \code{n} they

@@ -66,6 +66,10 @@ test_that("n.iter", {
   expect_warning(
       update(calc1.2.1, n.iter = c(500,100))
   )
+## update of n.iter with value < than available
+  expect_error(
+      update(calc1.2.1, n.iter = 50)
+  )
 })
 
 
