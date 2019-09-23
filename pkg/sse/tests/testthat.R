@@ -1,4 +1,3 @@
-library(lintr)
 library(testthat)
 library(sse)
 

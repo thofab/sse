@@ -559,13 +559,24 @@ setMethod("update",
                      The provided value will not be used.",
                     prefix = " ", initial = ""))  
                 n.iter <- as.integer(NA)
+              } else {
+                ## ans else statement is used here because only further
+                ## warnings or errors should be given if n.iter is used
+                n.iter <- dots[["n.iter"]]
+                if (length(n.iter) > 1){
+                  warning("Only the first element of 'n.iter' is used")
+                  n.iter <- n.iter[1]
+                }
+                n.iter <- as.integer(n.iter)
+                ## n.iter must be at least as in previous runs
+                if (!is.na(n.iter) & n.iter < object@iter) {
+                  stop(strwrap(gettextf(
+                      "The number of iterations must be equal >= %s.",
+                      (object@iter)),
+                      prefix = " ", initial = ""),
+                      call. = FALSE)
+                }
               }
-              n.iter <- dots[["n.iter"]]
-              if (length(n.iter) > 1){
-                warning("Only the first element of 'n.iter' is used")
-                n.iter <- n.iter[1]
-              }
-              n.iter <- as.integer(n.iter)
             } else {
               ## that does not meen that no iterations are done
               n.iter <- as.integer(NA)
