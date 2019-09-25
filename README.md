@@ -1,5 +1,5 @@
 # Sample Size Estimation
-```{r teaser}
+``` r
 install.packages("sse")
 library(sse)
 
