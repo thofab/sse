@@ -48,7 +48,8 @@ powFun.parametric <- function(psi){
   b <- rnorm(n(psi), mean = theta(psi), sd = xi(psi))
   w <- wilcox.test(a, b)$p.value < 0.05
   t <- t.test(a, b)$p.value < 0.05
-   return(c(w = w, t = t))
+  ##  cat(paste("xi:", xi(psi), "theta:", theta(psi), "\n"))    ## UNCOMMENT to see what is done!
+  return(c(w = w, t = t))
 }
 
 calc.parametric <- powCalc(psi.parametric,
@@ -60,6 +61,12 @@ pow.t.parametric <- powEx(calc.parametric,
                           theta = 1,
                           drop = 0.1,
                           endpoint = "t")
+
+pow.w.parametric <- powEx(calc.parametric,
+                          xi = 1,
+                          theta = 1,
+                          drop = 0.1,
+                          endpoint = "w")
 
 pow.t.parametric.xi05 <- powEx(calc.parametric,
                                xi = 0.5,
@@ -93,6 +100,11 @@ test_that("refine", {
   pow.w.rf <- refine(pow.w)
   expect_equal(pow.w.rf@iter, pow.w@iter)
   expect_equal(pow.w.rf@iter.example, pow.w@iter * 10)
+})
+test_that("refine with xi", {
+  pow.w.parametric.rf <- refine(pow.w.parametric) # check the values for xi and theta that are evaluated (cat())
+  expect_equal(pow.w.parametric.rf@iter, pow.w.parametric@iter)
+  expect_equal(pow.w.parametric.rf@iter.example, pow.w.parametric@iter * 10)
 })
 
 test_that("powEx", {

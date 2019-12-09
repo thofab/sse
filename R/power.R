@@ -397,6 +397,7 @@ setMethod("inspect",
             invisible(sampleSize(x = object, inspect = TRUE))
           })
 
+
 setMethod("refine",
           signature(object = "power"),
           definition = function(object, factor = 10){
@@ -423,10 +424,18 @@ setMethod("refine",
 
 
             ## -----
-            refinedObj <- workhorse(
-                object,
-                theta = object@theta == object@theta.example,
-                n.iter = iter.example)
+            if (is.na(object@xi.example)) {
+              refinedObj <- workhorse(
+                  object,
+                  theta = object@theta == object@theta.example,
+                  n.iter = iter.example)
+            } else {
+              refinedObj <- workhorse(
+                  object,
+                  theta = object@theta == object@theta.example,
+                  xi = object@xi == object@xi.example,
+                  n.iter = iter.example)
+            }
             ## Because only the iterations of the example are increased
             ## during refinement this needs to be handled here correctly
             refinedObj@iter.example <- iter.example
@@ -619,7 +628,7 @@ setMethod("update",
                   warning("But it is the same -> No changes will be done.")
                 } else if (!any(slot(newObj, s) %in% slot(object, s))) {
                   message(strwrap("It is entirly different ->
-                                   All calculations will be done.",
+                                   All evaluations will be done.",
                                   prefix = " ", initial = ""))
                   new.calc <- TRUE
                   any.change <- TRUE
@@ -627,7 +636,7 @@ setMethod("update",
                           & any(!(slot(newObj, s) %in% slot(object, s)))) {
                   message(strwrap(
                       "It contains some available elements ->
-                       The new elements will be calculated.",
+                       Only the new elements will be evaluated.",
                       prefix = " ", initial = ""))
                   ## --- increase n
                   ## the increasing itself is posponed because first we
@@ -640,7 +649,7 @@ setMethod("update",
                                                           slot(object, s)))) {
                   message(strwrap(
                       "It contains only available elements ->
-                       No new elements will be calculated.",
+                       No new elements will be evaluated.",
                       prefix = " ", initial = ""))
                   ## --- shrink n
                   takeElements <-
@@ -667,7 +676,7 @@ setMethod("update",
                   warning("But it is the same -> No changes will be done.")
                 } else if (!any(slot(newObj, s) %in% slot(object, s))) {
                   message(strwrap("It is entirly different ->
-                                   All calculations will be done.",
+                                   All evaluations will be done.",
                                   prefix = " ", initial = ""))
                   new.calc <- TRUE
                   any.change <- TRUE
@@ -676,7 +685,7 @@ setMethod("update",
                              %in% round(slot(object, s), 10)))) {
                   message(strwrap(
                       "It contains some available elements ->
-                       Ony the new elements will be calculated.",
+                       Only the new elements will be evaluated.",
                       prefix = " ", initial = ""))
                   ## --- increase theta
                   increase.theta <- TRUE
@@ -687,7 +696,7 @@ setMethod("update",
                                     < length(slot(object, s)))) {
                   message(strwrap(
                       "It contains only available elements ->
-                       No new elements will be calculated.",
+                       No new elements will be evaluated.",
                       prefix = " ", initial = ""))
                   ## --- shrink theta
                     takeElements <-
@@ -715,7 +724,7 @@ setMethod("update",
                 } else if (!any(slot(newObj, s) %in% slot(object, s))) {
                   message(strwrap(
                       "It is entirly different ->
-                       All calculations will be done.",
+                       All evaluations will be done.",
                       prefix = " ", initial = ""))
                   new.calc <- TRUE
                   any.change <- TRUE
@@ -723,7 +732,7 @@ setMethod("update",
                            & any(!(slot(newObj, s) %in% slot(object, s)))) {
                   message(strwrap(
                       "It contains some available elements ->
-                       The new elements will be evaluated (later).",
+                       Only the new elements will be evaluated.",
                       prefix = " ", initial = ""))
                   increase.xi <- TRUE
                 } else if (!new.calc
@@ -850,29 +859,17 @@ setMethod("update",
               ## ONLY if it did step over any change
               ## otherwise there is no takeObj and we do not want to
               if (!new.calc & any.change) {
-                #print("route A")
+                ## print("route A")
                 newObj <- takeObj
- 
-                ## ---
-                ## For the "growing" we did not change n.iter but took the
-                ## historic number
-                ## Now we increase n.iter over the whole object
-                if (!is.na(n.iter)) {
-                  #print("route B")
-                  newObj <- workhorse(newObj,
-                                      n.iter = n.iter)
-                }
               }
-
- 
-### new calc
             }
-
+            
+### new calc
             ## it is possible to update "n", "theta", "xi" AND do a new.calc
             ## but if we do a new.calc
             ## we do not need to do it also for n.iter again.
             if (new.calc) {
-              #print("route C")
+              ## print("route C, complete new evaluations")
               ## empty the historic core and fill it again
               newObj@core <- array(NA,
                                    dim = c(dim(newObj)[c("n", "theta", "xi")],
@@ -882,10 +879,11 @@ setMethod("update",
   
 ### new n.iter
             } else if (!is.na(n.iter)) {
-              #print("route D")
-              newObj <- workhorse(object,
+            ##  print("route D, increasing n.iter")
+              newObj <- workhorse(newObj,
                                   n.iter = n.iter)
             }
+            
             return(newObj)
           })
 
